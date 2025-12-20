@@ -1,11 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from app.core.config import settings
+from app.config import sqlite_config
 
 # 创建SQLAlchemy引擎
 engine = create_engine(
-    settings.DATABASE_URL, connect_args={"check_same_thread": False}  # SQLite特定配置
+    sqlite_config.URL, 
+    connect_args={"check_same_thread": False},  # SQLite特定配置
+    echo=sqlite_config.ECHO_SQL
 )
 
 # 创建会话工厂

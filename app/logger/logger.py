@@ -1,35 +1,79 @@
 import logging
 import os
 from logging.handlers import RotatingFileHandler
-from app.core.config import settings
+from logging.config import dictConfig
+from app.config import logging_config
 
-# 创建日志目录
-log_dir = os.path.dirname(settings.LOG_FILE) if settings.LOG_FILE else None
-if log_dir and not os.path.exists(log_dir):
-    os.makedirs(log_dir)
 
-# 配置日志格式
-log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+def setup_logging():
+    """配置日志系统"""
+    # 创建日志目录
+    if logging_config.FILE:
+        log_dir = os.path.dirname(logging_config.FILE)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+    
+    # 构建日志配置字典
+    log_config = {
+        "version": 1,
+        "disable_existing_loggers": logging_config.DISABLE_DEFAULT_LOGGERS,
+        "formatters": {
+            "standard": {
+                "format": logging_config.FORMAT,
+                "datefmt": logging_config.DATE_FORMAT
+            },
+        },
+        "handlers": {
+            "console": {
+                "level": logging_config.CONSOLE_LEVEL or logging_config.LEVEL,
+                "class": "logging.StreamHandler",
+                "formatter": "standard",
+                "stream": "ext://sys.stdout",
+            },
+        },
+        "loggers": {
+            "app": {
+                "handlers": ["console"],
+                "level": logging_config.LEVEL,
+                "propagate": False
+            },
+        },
+        "root": {
+            "handlers": ["console"],
+            "level": "WARNING",
+        }
+    }
+    
+    # 添加文件处理器（如果配置了日志文件）
+    if logging_config.FILE:
+        log_config["handlers"]["file"] = {
+            "level": logging_config.FILE_LEVEL or logging_config.LEVEL,
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "standard",
+            "filename": logging_config.FILE,
+            "maxBytes": logging_config.MAX_BYTES,
+            "backupCount": logging_config.BACKUP_COUNT,
+            "encoding": "utf-8",
+        }
+        # 将文件处理器添加到app logger
+        log_config["loggers"]["app"]["handlers"].append("file")
+    
+    # 为不同模块配置不同日志级别
+    for module, level in logging_config.MODULE_LEVELS.items():
+        log_config["loggers"][module] = {
+            "handlers": ["console"] + (["file"] if logging_config.FILE else []),
+            "level": level,
+            "propagate": False
+        }
+    
+    # 应用日志配置
+    dictConfig(log_config)
+    
+    # 获取并返回主日志记录器
+    logger = logging.getLogger("app")
+    logger.info("日志系统已初始化")
+    return logger
 
-# 创建日志记录器
-logger = logging.getLogger("app")
-logger.setLevel(getattr(logging, settings.LOG_LEVEL.upper()))
 
-# 创建控制台处理器
-console_handler = logging.StreamHandler()
-console_handler.setLevel(getattr(logging, settings.LOG_LEVEL.upper()))
-console_handler.setFormatter(logging.Formatter(log_format))
-
-# 添加控制台处理器到日志记录器
-logger.addHandler(console_handler)
-
-# 如果配置了日志文件，创建文件处理器
-if settings.LOG_FILE:
-    file_handler = RotatingFileHandler(
-        settings.LOG_FILE,
-        maxBytes=10 * 1024 * 1024,  # 10MB
-        backupCount=5
-    )
-    file_handler.setLevel(getattr(logging, settings.LOG_LEVEL.upper()))
-    file_handler.setFormatter(logging.Formatter(log_format))
-    logger.addHandler(file_handler)
+# 初始化日志系统
+logger = setup_logging()

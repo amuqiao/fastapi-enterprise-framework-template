@@ -1,22 +1,47 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 import argparse
 import os
-from app.core.config import settings
-from app.database import init_db
+from app.config import (
+    app_settings,
+    config_deps,
+    AppSettings,
+    SQLiteConfig,
+    LoggingConfig,
+)
+from app.databases import database_manager, sqlite
 from app.api.v1 import api_v1_router
 from app.middleware import setup_cors, request_logger_middleware
 from app.exceptions.exception_handler import global_exception_handler
 from app.logger.logger import logger
 
-# 初始化数据库
-init_db()
-
 # 创建FastAPI应用
 app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    title=app_settings.APP_NAME,
+    version=app_settings.APP_VERSION,
+    openapi_url=f"{app_settings.API_V1_STR}/openapi.json",
 )
+
+
+# 应用启动事件
+@app.on_event("startup")
+async def startup_event():
+    """应用启动事件 - 初始化数据库连接"""
+    logger.info(f"应用启动: {app_settings.APP_NAME} v{app_settings.APP_VERSION}")
+    logger.info("正在连接所有数据库...")
+    database_manager.connect_all()
+    # 创建所有表
+    sqlite.Base.metadata.create_all(bind=sqlite.engine)
+    logger.info("所有数据库连接成功")
+
+
+# 应用关闭事件
+@app.on_event("shutdown")
+async def shutdown_event():
+    """应用关闭事件 - 断开数据库连接"""
+    logger.info("应用关闭，正在断开数据库连接...")
+    database_manager.disconnect_all()
+    logger.info("所有数据库连接已断开")
+
 
 # 设置CORS中间件
 setup_cors(app)
@@ -28,7 +53,7 @@ app.middleware("http")(request_logger_middleware)
 app.add_exception_handler(Exception, global_exception_handler)
 
 # 包含API v1路由
-app.include_router(api_v1_router, prefix=settings.API_V1_STR)
+app.include_router(api_v1_router, prefix=app_settings.API_V1_STR)
 
 
 @app.get("/")
@@ -36,8 +61,24 @@ def root():
     """根路径"""
     return {
         "message": "Welcome to FastAPI Enterprise Architecture",
-        "version": settings.APP_VERSION,
-        "api_v1": settings.API_V1_STR,
+        "version": app_settings.APP_VERSION,
+        "api_v1": app_settings.API_V1_STR,
+    }
+
+
+@app.get("/api/v1/config")
+def get_config(
+    app_config: AppSettings = config_deps.app(),
+    db_config: SQLiteConfig = config_deps.sqlite(),
+    log_config: LoggingConfig = config_deps.logging(),
+):
+    """测试配置依赖注入"""
+    return {
+        "app_name": app_config.APP_NAME,
+        "environment": app_config.ENVIRONMENT,
+        "sqlite_url": db_config.URL,
+        "log_level": log_config.LEVEL,
+        "log_file": log_config.FILE,
     }
 
 
@@ -111,7 +152,7 @@ if __name__ == "__main__":
     # 运行uvicorn服务器
     import uvicorn
 
-    logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    logger.info(f"Starting {app_settings.APP_NAME} v{app_settings.APP_VERSION}")
     if args.reload:
         # 当启用reload模式时，需要使用导入字符串
         uvicorn.run("main:app", host=args.host, port=args.port, reload=True)

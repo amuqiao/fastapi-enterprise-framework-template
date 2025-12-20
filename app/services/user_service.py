@@ -1,91 +1,92 @@
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.utils.password import get_password_hash, verify_password
 from app.utils.jwt import create_access_token
 from app.logger.logger import logger
+from app.repositories.sqlite.user_repository import UserRepository
+from app.exceptions.custom_exceptions import (
+    ConflictError,
+    AuthenticationError,
+    NotFoundError,
+)
 
 
 class UserService:
     """用户服务类"""
-    
-    @staticmethod
-    def register_user(db: Session, user_create: UserCreate) -> User:
+
+    def __init__(self):
+        self.user_repository = None
+
+    def register_user(self, db: Session, user_create: UserCreate) -> User:
         """用户注册"""
+        # 初始化仓储
+        self.user_repository = UserRepository(db)
+
         # 检查用户名是否已存在
-        existing_user = db.query(User).filter(User.username == user_create.username).first()
+        existing_user = self.user_repository.get_by_username(user_create.username)
         if existing_user:
-            logger.warning(f"User registration failed: username {user_create.username} already exists")
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Username already registered"
+            logger.warning(
+                f"User registration failed: username {user_create.username} already exists"
             )
-        
+            raise ConflictError(detail="Username already registered")
+
         # 检查邮箱是否已存在
-        existing_email = db.query(User).filter(User.email == user_create.email).first()
+        existing_email = self.user_repository.get_by_email(user_create.email)
         if existing_email:
-            logger.warning(f"User registration failed: email {user_create.email} already exists")
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered"
+            logger.warning(
+                f"User registration failed: email {user_create.email} already exists"
             )
-        
+            raise ConflictError(detail="Email already registered")
+
         # 创建新用户
         hashed_password = get_password_hash(user_create.password)
-        db_user = User(
-            username=user_create.username,
-            email=user_create.email,
-            password_hash=hashed_password
-        )
-        
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
-        
+        # 创建用户字典，排除password字段，使用password_hash
+        user_data = user_create.dict(exclude={"password"})
+        user_data["password_hash"] = hashed_password
+        # 直接使用字典创建用户
+        db_user = self.user_repository.create(user_data)
+
         logger.info(f"User registered successfully: {user_create.username}")
         return db_user
-    
-    @staticmethod
-    def authenticate_user(db: Session, username: str, password: str) -> User:
+
+    def authenticate_user(self, db: Session, username: str, password: str) -> User:
         """用户认证"""
+        # 初始化仓储
+        self.user_repository = UserRepository(db)
+
         # 查询用户
-        user = db.query(User).filter(User.username == username).first()
+        user = self.user_repository.get_by_username(username)
         if not user:
             logger.warning(f"Authentication failed: user {username} not found")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"}
-            )
-        
+            raise AuthenticationError(detail="Incorrect username or password")
+
         # 验证密码
         if not verify_password(password, user.password_hash):
-            logger.warning(f"Authentication failed: incorrect password for user {username}")
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"}
+            logger.warning(
+                f"Authentication failed: incorrect password for user {username}"
             )
-        
+            raise AuthenticationError(detail="Incorrect username or password")
+
         logger.info(f"User authenticated successfully: {username}")
         return user
-    
-    @staticmethod
-    def get_user_by_id(db: Session, user_id: int) -> User:
+
+    def get_user_by_id(self, db: Session, user_id: int) -> User:
         """根据ID获取用户"""
-        user = db.query(User).filter(User.id == user_id).first()
+        # 初始化仓储
+        self.user_repository = UserRepository(db)
+
+        user = self.user_repository.get(user_id)
         if not user:
             logger.warning(f"User not found: {user_id}")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+            raise NotFoundError(detail="User not found")
         return user
-    
+
     @staticmethod
     def generate_token(user: User) -> str:
         """生成JWT令牌"""
-        access_token = create_access_token(data={"sub": str(user.id), "username": user.username})
+        access_token = create_access_token(
+            data={"sub": str(user.id), "username": user.username}
+        )
         logger.info(f"Generated access token for user: {user.username}")
         return access_token
