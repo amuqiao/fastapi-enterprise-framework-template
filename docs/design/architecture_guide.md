@@ -95,6 +95,69 @@ graph TD
     style S fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
 ```
 
+### 1.1 用户注册登录流程架构图
+
+为了更直观地展示系统的工作流程，我们在整体架构图基础上，新增用户注册登录流程架构图，展示从客户端发起请求到服务器返回响应的完整数据流转：
+
+```mermaid
+graph TD
+    subgraph 客户端层
+        A[Web客户端] -->|1. 注册/登录请求| B[API网关]
+        C[移动客户端] -->|1. 注册/登录请求| B
+    end
+    
+    subgraph 应用层
+        B -->|2. 转发请求| E[FastAPI应用]
+        
+        subgraph 核心框架层
+            E -->|3. 中间件处理| G[中间件模块]
+            G -->|4. 路由匹配| F[路由模块]
+            F -->|5. 依赖注入| H[依赖注入模块]
+            H -->|6. 获取配置| I[配置管理模块]
+        end
+        
+        subgraph 业务逻辑层
+            F -->|7. 调用认证服务| J[服务层]
+            J -->|8. 检查用户| K[仓储层]
+            J -->|9. 发布事件| L[领域事件]
+            J -->|10. 缓存会话| N[缓存层]
+        end
+        
+        subgraph 基础设施层
+            K -->|11. 数据库操作| M[数据库]
+            L -->|12. 消息队列| O[消息队列]
+            E -->|13. 日志记录| P[日志模块]
+            E -->|14. 安全验证| Q[安全模块]
+            E -->|15. 监控追踪| R[观测性模块]
+        end
+    end
+    
+    J -->|16. 返回响应| F
+    F -->|17. 返回响应| G
+    G -->|18. 返回响应| E
+    E -->|19. 返回响应| B
+    B -->|20. 返回响应| A
+    B -->|20. 返回响应| C
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style C fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style F fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style I fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style J fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style M fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style P fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style Q fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+```
+
 ### 2. 分层设计
 
 | 层级 | 职责 | 核心模块 |
