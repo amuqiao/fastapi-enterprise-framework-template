@@ -34,7 +34,13 @@
 
 ## 三、整体架构设计
 
-### 1. 整体架构图
+为了便于不同层次的读者理解系统架构，我们将架构图分为四个清晰的版本：基础版本、基础详细版、进阶版本和进阶详细版。每个版本针对不同的读者需求，从简单到复杂，逐步深入。
+
+### 1. 基础版本架构图
+
+**适用场景**：快速理解系统核心架构，适合初学者或需要快速了解架构的读者。
+
+**核心特点**：包含最基本的架构组件，突出核心层次结构，去除复杂的企业级特性。
 
 ```mermaid
 graph TD
@@ -95,9 +101,11 @@ graph TD
     style S fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
 ```
 
-### 1.1 用户注册登录流程架构图
+### 2. 基础详细版架构图
 
-为了更直观地展示系统的工作流程，我们在整体架构图基础上，新增用户注册登录流程架构图，展示从客户端发起请求到服务器返回响应的完整数据流转：
+**适用场景**：需要了解基础架构如何实际运行的读者，适合开发人员或架构设计人员。
+
+**核心特点**：在基础版本的基础上，增加了用户注册登录流程，展示了从客户端发起请求到服务器返回响应的完整数据流转。
 
 ```mermaid
 graph TD
@@ -158,9 +166,81 @@ graph TD
     style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
 ```
 
-### 1.2 优化后的整体架构图
+### 3. 进阶版本架构图
 
-基于上述分析，我们对整体架构进行了优化，新增了API网关详细设计、配置中心、服务注册与发现、事件总线等组件，同时调整了部分模块关系：
+**适用场景**：了解企业级架构特性，适合架构师或需要设计企业级系统的读者。
+
+**核心特点**：包含服务治理和配置中心等企业级特性，结构清晰，突出核心企业级组件。
+
+```mermaid
+graph TD
+    subgraph 客户端层
+        A[Web客户端] --> B[API网关]
+        C[移动客户端] --> B
+        D[第三方服务] --> B
+    end
+    
+    subgraph 服务治理层
+        B --> ZK[服务注册与发现]
+        CC[配置中心] --> E[FastAPI应用]
+    end
+    
+    subgraph 应用层
+        B --> E[FastAPI应用]
+        
+        subgraph 核心框架层
+            E --> G[中间件模块] --> F[路由模块]
+            F --> H[依赖注入模块] --> I[配置管理模块] --> CC
+        end
+        
+        subgraph 业务逻辑层
+            F --> J[服务层] --> K[仓储层]
+            J --> EB[事件总线] --> L[领域事件]
+        end
+        
+        subgraph 基础设施层
+            K --> M[数据库]
+            J --> N[缓存层]
+            L --> O[消息队列]
+            E --> P[日志模块]
+            E --> Q[安全模块]
+            E --> R[观测性模块]
+        end
+        
+        subgraph 扩展层
+            E --> S[插件架构]
+        end
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style C fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style D fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style F fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style I fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style J fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style M fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style P fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style Q fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style S fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style ZK fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style CC fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style EB fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
+### 4. 进阶详细版架构图
+
+**适用场景**：需要深入了解完整企业级架构设计的读者，适合资深架构师或需要实现复杂系统的开发团队。
+
+**核心特点**：包含完整的企业级特性，如API网关详细设计、配置中心、服务注册与发现、事件总线、数据一致性保障、分布式追踪等。
 
 ```mermaid
 graph TD
@@ -256,74 +336,6 @@ graph TD
     style B3 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
     style B4 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
     style B5 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-```
-
-### 1.3 精简版整体架构图
-
-为了便于快速理解系统架构，我们提供了一个精简版的整体架构图，保留了核心模块和主要关系，去除了部分细节：
-
-```mermaid
-graph TD
-    subgraph 客户端层
-        A[Web客户端] --> B[API网关]
-        C[移动客户端] --> B
-        D[第三方服务] --> B
-    end
-    
-    subgraph 服务治理层
-        B --> ZK[服务注册与发现]
-        CC[配置中心] --> E[FastAPI应用]
-    end
-    
-    subgraph 应用层
-        B --> E[FastAPI应用]
-        
-        subgraph 核心框架层
-            E --> G[中间件模块] --> F[路由模块]
-            F --> H[依赖注入模块] --> I[配置管理模块] --> CC
-        end
-        
-        subgraph 业务逻辑层
-            F --> J[服务层] --> K[仓储层]
-            J --> EB[事件总线] --> L[领域事件]
-        end
-        
-        subgraph 基础设施层
-            K --> M[数据库]
-            J --> N[缓存层]
-            L --> O[消息队列]
-            E --> P[日志模块]
-            E --> Q[安全模块]
-            E --> R[观测性模块]
-        end
-        
-        subgraph 扩展层
-            E --> S[插件架构]
-        end
-    end
-    
-    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style C fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style D fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style E fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style F fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style G fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style H fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style I fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style J fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style K fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style L fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style M fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style N fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style P fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style Q fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style S fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style ZK fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style CC fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style EB fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
 ```
 
 ### 2. 分层设计
