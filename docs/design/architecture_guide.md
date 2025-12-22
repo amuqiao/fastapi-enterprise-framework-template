@@ -258,6 +258,74 @@ graph TD
     style B5 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
 ```
 
+### 1.3 精简版整体架构图
+
+为了便于快速理解系统架构，我们提供了一个精简版的整体架构图，保留了核心模块和主要关系，去除了部分细节：
+
+```mermaid
+graph TD
+    subgraph 客户端层
+        A[Web客户端] --> B[API网关]
+        C[移动客户端] --> B
+        D[第三方服务] --> B
+    end
+    
+    subgraph 服务治理层
+        B --> ZK[服务注册与发现]
+        CC[配置中心] --> E[FastAPI应用]
+    end
+    
+    subgraph 应用层
+        B --> E[FastAPI应用]
+        
+        subgraph 核心框架层
+            E --> G[中间件模块] --> F[路由模块]
+            F --> H[依赖注入模块] --> I[配置管理模块] --> CC
+        end
+        
+        subgraph 业务逻辑层
+            F --> J[服务层] --> K[仓储层]
+            J --> EB[事件总线] --> L[领域事件]
+        end
+        
+        subgraph 基础设施层
+            K --> M[数据库]
+            J --> N[缓存层]
+            L --> O[消息队列]
+            E --> P[日志模块]
+            E --> Q[安全模块]
+            E --> R[观测性模块]
+        end
+        
+        subgraph 扩展层
+            E --> S[插件架构]
+        end
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style C fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style D fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style F fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style I fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style J fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style M fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style P fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style Q fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style S fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style ZK fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style CC fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style EB fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
 ### 2. 分层设计
 
 | 层级 | 职责 | 核心模块 |
@@ -580,9 +648,12 @@ graph TD
         D --> F
         D --> G
         
-        B --> H[UserRepository用户仓储]
-        C --> I[OrderRepository订单仓储]
-        D --> J[ProductRepository商品仓储]
+        B --> H[仓储层依赖]
+        C --> H
+        D --> H
+        
+        H --> I[数据库]
+        F --> J[消息队列]
     end
     
     style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
@@ -593,29 +664,31 @@ graph TD
     style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
     style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
     style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style I fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style J fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style J fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
 ```
 
 **数据流转图**：
 ```mermaid
 sequenceDiagram
-    participant API as API路由层
+    participant API as API路由
     participant Service as 服务层
-    participant Repo as 仓储层
+    participant Validator as 业务规则验证
+    participant Repository as 仓储层
     participant DB as 数据库
     participant Event as 领域事件
-    participant Logger as 日志模块
+    participant Logger as 日志记录
     
     API->>Service: 调用服务方法
-    Service->>Service: 业务规则验证
-    Service->>Repo: 调用仓储方法
-    Repo->>DB: 执行数据库操作
-    DB-->>Repo: 返回数据
-    Repo-->>Service: 返回结果
+    Service->>Validator: 业务规则验证
+    Validator->>Service: 验证结果
+    Service->>Repository: 调用仓储方法
+    Repository->>DB: 数据库操作
+    DB->>Repository: 返回数据
+    Repository->>Service: 返回处理结果
     Service->>Event: 发布领域事件
     Service->>Logger: 记录日志
-    Service-->>API: 返回响应
+    Service->>API: 返回业务结果
 ```
 
 **服务层与仓储层的关系**：
