@@ -367,12 +367,12 @@ graph TD
 
 **模块架构图**：
 ```mermaid
-graph TD
-    A[环境变量文件] --> B[Pydantic Settings]
-    C[环境变量] --> B
-    B --> D[配置验证]
-    D --> E[配置实例]
-    E --> F[应用使用]
+graph LR
+    A[环境变量文件] -->|1. 加载配置| B[Pydantic Settings]
+    C[环境变量] -->|2. 读取环境变量| B
+    B -->|3. 配置验证| D[配置验证]
+    D -->|4. 生成实例| E[配置实例]
+    E -->|5. 配置使用| F[应用使用]
     
     style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
     style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
@@ -392,12 +392,12 @@ sequenceDiagram
     participant Config as 配置实例
     participant App as 应用
     
-    EnvFile->>Pydantic: 加载配置文件
-    EnvVar->>Pydantic: 读取环境变量
-    Pydantic->>Validation: 验证配置
-    Validation->>Config: 生成配置实例
-    Config->>App: 应用使用配置
-    App->>Config: 获取配置值
+    EnvFile->>Pydantic: 1. 加载配置文件
+    EnvVar->>Pydantic: 2. 读取环境变量
+    Pydantic->>Validation: 3. 执行配置验证
+    Validation->>Config: 4. 生成配置实例
+    Config->>App: 5. 提供配置访问
+    App->>Config: 6. 获取配置值
 ```
 
 **关键实现**：
@@ -455,15 +455,15 @@ settings = AppSettings()
 
 **模块架构图**：
 ```mermaid
-graph TD
-    A[路由函数] --> B[依赖声明]
-    B --> C[依赖解析器]
-    C --> D{依赖有子依赖?}
+graph LR
+    A[路由函数] -->|1. 声明依赖| B[依赖声明]
+    B -->|2. 请求解析| C[依赖解析器]
+    C -->|3. 检查子依赖| D{存在子依赖?}
     D -->|是| E[递归解析子依赖]
     D -->|否| F[创建依赖实例]
-    E --> F
-    F --> G[缓存依赖实例]
-    G --> H[使用依赖]
+    E -->|4. 子依赖解析完成| F
+    F -->|5. 缓存实例| G[缓存依赖实例]
+    G -->|6. 注入依赖| H[使用依赖]
     
     style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
     style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
@@ -485,13 +485,17 @@ sequenceDiagram
     participant DepInstance as 依赖实例
     participant AppLogic as 应用逻辑
     
-    Router->>DepDeclare: 声明依赖
-    DepDeclare->>DepResolver: 请求解析依赖
-    DepResolver->>SubDep: 检查是否有子依赖
-    SubDep->>DepResolver: 返回子依赖实例
-    DepResolver->>DepInstance: 创建依赖实例
-    DepInstance->>AppLogic: 传递给应用逻辑
-    AppLogic->>Router: 执行路由逻辑
+    Router->>DepDeclare: 1. 声明需要的依赖
+    DepDeclare->>DepResolver: 2. 请求解析依赖
+    DepResolver->>DepResolver: 3. 检查是否存在子依赖
+    alt 存在子依赖
+        DepResolver->>SubDep: 4. 递归解析子依赖
+        SubDep->>DepResolver: 5. 返回子依赖实例
+    end
+    DepResolver->>DepInstance: 6. 创建或获取依赖实例
+    DepResolver->>DepResolver: 7. 缓存依赖实例
+    DepResolver->>AppLogic: 8. 注入依赖实例
+    AppLogic->>Router: 9. 执行路由逻辑
 ```
 
 **关键实现**：
@@ -523,7 +527,7 @@ async def get_db_session() -> AsyncSession:
 
 **模块架构图**：
 ```mermaid
-graph TD
+graph LR
     A[主API路由器] --> B[版本路由v1]
     A --> C[版本路由v2]
     B --> D[资源路由1]
@@ -1075,17 +1079,7 @@ class UserRepository(BaseRepository[User]):
 graph TD
     subgraph 中间件链
         A[CORS中间件] --> B[日志中间件]
-        B --> C[安全中间件]
-        C --> D[限流中间件]
-        D --> E[自定义中间件]
-    end
-    
-    subgraph 中间件管理
-        F[中间件注册器] --> A
-        F --> B
-        F --> C
-        F --> D
-        F --> E
+        B --> E[请求ID中间件]
     end
     
     Client[客户端请求] --> 中间件链
@@ -1095,14 +1089,10 @@ graph TD
     
     style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
     style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style E fill:#95A5A6,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
     style Client fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
     style Router fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
     style 中间件链 fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style 中间件管理 fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
 ```
 
 **数据流转图**：
@@ -1111,18 +1101,15 @@ sequenceDiagram
     participant Client as 客户端
     participant CORS as CORS中间件
     participant Logging as 日志中间件
-    participant Security as 安全中间件
-    participant RateLimit as 限流中间件
+    participant RequestID as 请求ID中间件
     participant Router as 路由层
     
     Client->>CORS: 请求经过CORS中间件
     CORS->>Logging: 请求经过日志中间件
-    Logging->>Security: 请求经过安全中间件
-    Security->>RateLimit: 请求经过限流中间件
-    RateLimit->>Router: 请求到达路由层
-    Router->>RateLimit: 响应返回限流中间件
-    RateLimit->>Security: 响应返回安全中间件
-    Security->>Logging: 响应返回日志中间件
+    Logging->>RequestID: 请求经过请求ID中间件
+    RequestID->>Router: 请求到达路由层
+    Router->>RequestID: 响应返回请求ID中间件
+    RequestID->>Logging: 响应返回日志中间件
     Logging->>CORS: 响应返回CORS中间件
     CORS->>Client: 响应返回客户端
 ```
@@ -1130,18 +1117,23 @@ sequenceDiagram
 **关键实现**：
 ```python
 # app/middleware/__init__.py
-from fastapi import FastAPI
-from app.middleware.cors import add_cors_middleware
-from app.middleware.logging import add_logging_middleware
-from app.middleware.security import add_security_middleware
-from app.middleware.rate_limiter import add_rate_limiter_middleware
+from app.middleware.cors import setup_cors
+from app.middleware.request_logger import request_logger_middleware
+from app.middleware.authentication import get_current_user, oauth2_scheme
+from app.middleware.request import request_id_middleware
 
-def register_middlewares(app: FastAPI) -> None:
+
+# main.py 中的中间件注册
+def register_middlewares(app):
     """注册所有中间件"""
-    add_cors_middleware(app)
-    add_logging_middleware(app)
-    add_security_middleware(app)
-    add_rate_limiter_middleware(app)
+    # 1. 注册CORS中间件
+    setup_cors(app)
+    
+    # 2. 注册日志中间件
+    app.middleware("http")(request_logger_middleware)
+    
+    # 3. 注册请求ID中间件
+    app.middleware("http")(request_id_middleware)
 ```
 
 ### 7. 安全模块
@@ -1156,7 +1148,7 @@ def register_middlewares(app: FastAPI) -> None:
 
 **模块架构图**：
 ```mermaid
-graph TD
+graph LR
     subgraph 安全模块
         A[认证模块] --> B[JWT认证]
         A --> C[API Key认证]
@@ -1258,7 +1250,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 **模块架构图**：
 ```mermaid
-graph TD
+graph LR
     subgraph 观测性模块
         A[日志模块] --> B[结构化日志]
         A --> C[控制台输出]
