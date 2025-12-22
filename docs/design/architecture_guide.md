@@ -352,57 +352,6 @@ graph TD
 | **基础设施层** | 提供技术支持 | 数据库、缓存层、消息队列、日志模块、安全模块、观测性模块 |
 | **扩展层** | 支持架构扩展 | 插件架构 |
 
-### 3. 模块功能架构图
-
-```mermaid
-graph TD
-    subgraph 核心框架模块
-        A[配置管理] --> B[依赖注入]
-        C[路由与API版本控制] --> D[中间件]
-        B --> D
-    end
-    
-    subgraph 业务逻辑模块
-        E[服务层] --> F[仓储层]
-        E --> G[领域事件]
-    end
-    
-    subgraph 基础设施模块
-        H[安全模块] --> I[观测性模块]
-        J[数据库] --> K[缓存层]
-        L[消息队列] --> M[异步任务]
-    end
-    
-    subgraph 扩展模块
-        N[插件架构] --> O[插件管理器]
-    end
-    
-    coreFrame[核心框架模块] --> busiLogic[业务逻辑模块]
-    coreFrame --> infra[基础设施模块]
-    busiLogic --> infra
-    coreFrame --> ext[扩展模块]
-    
-    style coreFrame fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style busiLogic fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style infra fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style ext fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style E fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style F fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style G fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style H fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style I fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style J fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style K fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style L fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style M fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style N fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style O fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-```
-
 ## 四、核心模块设计
 
 ### 1. 配置管理模块
