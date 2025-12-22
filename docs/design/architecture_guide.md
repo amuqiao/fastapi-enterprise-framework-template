@@ -34,7 +34,7 @@
 
 ## 三、整体架构设计
 
-### 1. 架构图
+### 1. 整体架构图
 
 ```mermaid
 graph TD
@@ -104,6 +104,57 @@ graph TD
 | **基础设施层** | 提供技术支持 | 数据库、缓存层、消息队列、日志模块、安全模块、观测性模块 |
 | **扩展层** | 支持架构扩展 | 插件架构 |
 
+### 3. 模块功能架构图
+
+```mermaid
+graph TD
+    subgraph 核心框架模块
+        A[配置管理] --> B[依赖注入]
+        C[路由与API版本控制] --> D[中间件]
+        B --> D
+    end
+    
+    subgraph 业务逻辑模块
+        E[服务层] --> F[仓储层]
+        E --> G[领域事件]
+    end
+    
+    subgraph 基础设施模块
+        H[安全模块] --> I[观测性模块]
+        J[数据库] --> K[缓存层]
+        L[消息队列] --> M[异步任务]
+    end
+    
+    subgraph 扩展模块
+        N[插件架构] --> O[插件管理器]
+    end
+    
+    coreFrame[核心框架模块] --> busiLogic[业务逻辑模块]
+    coreFrame --> infra[基础设施模块]
+    busiLogic --> infra
+    coreFrame --> ext[扩展模块]
+    
+    style coreFrame fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style busiLogic fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style infra fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style ext fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style F fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style H fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style I fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style J fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style K fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style L fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style M fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style O fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
 ## 四、核心模块设计
 
 ### 1. 配置管理模块
@@ -116,6 +167,41 @@ graph TD
 - 支持环境变量覆盖配置文件
 - 配置热更新支持
 - 配置验证机制
+
+**模块架构图**：
+```mermaid
+graph TD
+    A[环境变量文件] --> B[Pydantic Settings]
+    C[环境变量] --> B
+    B --> D[配置验证]
+    D --> E[配置实例]
+    E --> F[应用使用]
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant EnvFile as 环境变量文件
+    participant EnvVar as 环境变量
+    participant Pydantic as Pydantic Settings
+    participant Validation as 配置验证
+    participant Config as 配置实例
+    participant App as 应用
+    
+    EnvFile->>Pydantic: 加载配置文件
+    EnvVar->>Pydantic: 读取环境变量
+    Pydantic->>Validation: 验证配置
+    Validation->>Config: 生成配置实例
+    Config->>App: 应用使用配置
+    App->>Config: 获取配置值
+```
 
 **关键实现**：
 ```python
@@ -170,6 +256,47 @@ settings = AppSettings()
 - 依赖自动注入
 - 支持依赖替换，便于测试
 
+**模块架构图**：
+```mermaid
+graph TD
+    A[路由函数] --> B[依赖声明]
+    B --> C[依赖解析器]
+    C --> D{依赖有子依赖?}
+    D -->|是| E[递归解析子依赖]
+    D -->|否| F[创建依赖实例]
+    E --> F
+    F --> G[缓存依赖实例]
+    G --> H[使用依赖]
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant Router as 路由函数
+    participant DepDeclare as 依赖声明
+    participant DepResolver as 依赖解析器
+    participant SubDep as 子依赖
+    participant DepInstance as 依赖实例
+    participant AppLogic as 应用逻辑
+    
+    Router->>DepDeclare: 声明依赖
+    DepDeclare->>DepResolver: 请求解析依赖
+    DepResolver->>SubDep: 检查是否有子依赖
+    SubDep->>DepResolver: 返回子依赖实例
+    DepResolver->>DepInstance: 创建依赖实例
+    DepInstance->>AppLogic: 传递给应用逻辑
+    AppLogic->>Router: 执行路由逻辑
+```
+
 **关键实现**：
 ```python
 # app/dependencies/db.py
@@ -197,6 +324,54 @@ async def get_db_session() -> AsyncSession:
 - 路由自动注册
 - 支持路由分组
 
+**模块架构图**：
+```mermaid
+graph TD
+    A[主API路由器] --> B[版本路由v1]
+    A --> C[版本路由v2]
+    B --> D[资源路由1]
+    B --> E[资源路由2]
+    C --> F[资源路由1]
+    C --> G[资源路由2]
+    D --> H[路径参数处理]
+    E --> I[查询参数处理]
+    F --> J[路径参数处理]
+    G --> K[查询参数处理]
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style I fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style J fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style K fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant Client as 客户端
+    participant APIRouter as 主API路由器
+    participant VersionRouter as 版本路由
+    participant ResourceRouter as 资源路由
+    participant PathHandler as 路径参数处理
+    participant QueryHandler as 查询参数处理
+    participant Service as 服务层
+    
+    Client->>APIRouter: 发送请求
+    APIRouter->>VersionRouter: 路由到版本
+    VersionRouter->>ResourceRouter: 路由到资源
+    ResourceRouter->>PathHandler: 处理路径参数
+    ResourceRouter->>QueryHandler: 处理查询参数
+    PathHandler->>Service: 传递参数
+    QueryHandler->>Service: 传递参数
+    Service->>Client: 返回响应
+```
+
 **关键实现**：
 ```python
 # app/api/__init__.py
@@ -221,6 +396,64 @@ api_router.include_router(v2_router, prefix="/v2", tags=["v2"])
 - **DDD领域驱动**：基于领域模型设计，实现领域服务、领域事件和领域规则
 - **接口抽象**：通过抽象接口定义服务契约，实现依赖倒置，便于测试和替换实现
 - **事务管理**：负责业务事务的管理，确保数据一致性
+
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 服务层架构
+        A[BaseService基类] --> B[UserService用户服务]
+        A --> C[OrderService订单服务]
+        A --> D[ProductService商品服务]
+        
+        B --> E[业务规则验证]
+        B --> F[领域事件发布]
+        B --> G[日志记录]
+        
+        C --> E
+        C --> F
+        C --> G
+        
+        D --> E
+        D --> F
+        D --> G
+        
+        B --> H[UserRepository用户仓储]
+        C --> I[OrderRepository订单仓储]
+        D --> J[ProductRepository商品仓储]
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style J fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant API as API路由层
+    participant Service as 服务层
+    participant Repo as 仓储层
+    participant DB as 数据库
+    participant Event as 领域事件
+    participant Logger as 日志模块
+    
+    API->>Service: 调用服务方法
+    Service->>Service: 业务规则验证
+    Service->>Repo: 调用仓储方法
+    Repo->>DB: 执行数据库操作
+    DB-->>Repo: 返回数据
+    Repo-->>Service: 返回结果
+    Service->>Event: 发布领域事件
+    Service->>Logger: 记录日志
+    Service-->>API: 返回响应
+```
 
 **服务层与仓储层的关系**：
 - 服务层调用仓储层来获取和持久化数据
@@ -466,6 +699,55 @@ class OrderService(BaseService[Order]):
 - **事务支持**：参与服务层的事务管理，确保数据一致性
 - **查询构建器**：支持灵活的查询构建，满足复杂查询需求
 
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 仓储层架构
+        A[BaseRepository基类] --> B[UserRepository用户仓储]
+        A --> C[OrderRepository订单仓储]
+        A --> D[ProductRepository商品仓储]
+        
+        B --> E[数据库会话]
+        C --> E
+        D --> E
+        
+        E --> F[SQLAlchemy ORM]
+        E --> G[异步操作]
+        
+        F --> H[查询构建器]
+        F --> I[事务管理]
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant Service as 服务层
+    participant Repo as 仓储层
+    participant Session as 数据库会话
+    participant ORM as SQLAlchemy ORM
+    participant DB as 数据库
+    
+    Service->>Repo: 调用仓储方法
+    Repo->>Session: 使用数据库会话
+    Session->>ORM: 构建SQL查询
+    ORM->>DB: 执行数据库操作
+    DB-->>ORM: 返回查询结果
+    ORM-->>Session: 转换为对象
+    Session-->>Repo: 返回实体对象
+    Repo-->>Service: 返回处理结果
+```
+
 **仓储层与服务层的关系**：
 - 仓储层是服务层的依赖，服务层通过仓储层访问数据
 - 仓储层只负责数据访问，不包含业务规则
@@ -586,6 +868,63 @@ class UserRepository(BaseRepository[User]):
 - 支持自定义中间件
 - 内置常用中间件（CORS、限流、日志、认证等）
 
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 中间件链
+        A[CORS中间件] --> B[日志中间件]
+        B --> C[安全中间件]
+        C --> D[限流中间件]
+        D --> E[自定义中间件]
+    end
+    
+    subgraph 中间件管理
+        F[中间件注册器] --> A
+        F --> B
+        F --> C
+        F --> D
+        F --> E
+    end
+    
+    Client[客户端请求] --> 中间件链
+    中间件链 --> Router[路由处理]
+    Router --> 中间件链
+    中间件链 --> Client
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style Client fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style Router fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style 中间件链 fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style 中间件管理 fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant Client as 客户端
+    participant CORS as CORS中间件
+    participant Logging as 日志中间件
+    participant Security as 安全中间件
+    participant RateLimit as 限流中间件
+    participant Router as 路由层
+    
+    Client->>CORS: 请求经过CORS中间件
+    CORS->>Logging: 请求经过日志中间件
+    Logging->>Security: 请求经过安全中间件
+    Security->>RateLimit: 请求经过限流中间件
+    RateLimit->>Router: 请求到达路由层
+    Router->>RateLimit: 响应返回限流中间件
+    RateLimit->>Security: 响应返回安全中间件
+    Security->>Logging: 响应返回日志中间件
+    Logging->>CORS: 响应返回CORS中间件
+    CORS->>Client: 响应返回客户端
+```
+
 **关键实现**：
 ```python
 # app/middleware/__init__.py
@@ -612,6 +951,66 @@ def register_middlewares(app: FastAPI) -> None:
 - 细粒度权限控制
 - 输入验证和输出过滤
 - 防止常见安全漏洞（SQL注入、XSS、CSRF等）
+
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 安全模块
+        A[认证模块] --> B[JWT认证]
+        A --> C[API Key认证]
+        A --> D[OAuth2认证]
+        
+        E[授权模块] --> F[基于角色的访问控制]
+        E --> G[基于权限的访问控制]
+        
+        H[数据安全] --> I[输入验证]
+        H --> J[输出过滤]
+        H --> K[加密解密]
+        
+        L[安全防护] --> M[防止SQL注入]
+        L --> N[防止XSS攻击]
+        L --> O[防止CSRF攻击]
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style J fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style M fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant Client as 客户端
+    participant Router as 路由层
+    participant Auth as 认证模块
+    participant JWT as JWT处理
+    participant Settings as 配置
+    participant DB as 数据库
+    participant Authz as 授权模块
+    
+    Client->>Router: 发送请求（带Token）
+    Router->>Auth: 调用get_current_user
+    Auth->>JWT: 解析Token
+    JWT->>Settings: 获取密钥
+    JWT->>Auth: 返回用户标识
+    Auth->>DB: 查询用户信息
+    DB->>Auth: 返回用户数据
+    Auth->>Authz: 检查权限
+    Authz->>Router: 授权结果
+    Router->>Client: 返回响应
+```
 
 **关键实现**：
 ```python
@@ -654,6 +1053,63 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 - 性能监控：支持指标收集，便于性能分析和优化
 - 健康检查：支持系统健康状态检查
 - 可扩展性：支持多种观测性工具集成
+
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 观测性模块
+        A[日志模块] --> B[结构化日志]
+        A --> C[控制台输出]
+        A --> D[文件输出]
+        A --> E[日志级别控制]
+        
+        F[监控模块] --> G[指标收集]
+        F --> H[健康检查]
+        F --> I[性能监控]
+        
+        J[追踪模块] --> K[分布式追踪]
+        J --> L[请求追踪]
+        J --> M[链路可视化]
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style J fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style M fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant App as 应用代码
+    participant Logger as 日志模块
+    participant Config as 日志配置
+    participant Console as 控制台
+    participant File as 日志文件
+    participant Monitor as 监控模块
+    participant Metrics as 指标收集
+    participant Health as 健康检查
+    
+    App->>Logger: 记录日志
+    Logger->>Config: 获取日志配置
+    Logger->>Console: 输出到控制台
+    Logger->>File: 写入日志文件
+    
+    App->>Monitor: 收集指标
+    Monitor->>Metrics: 处理指标数据
+    Monitor->>Health: 执行健康检查
+    Health->>Monitor: 返回健康状态
+    Monitor->>Metrics: 暴露指标端点
+```
 
 **日志配置说明**：
 - 日志配置统一在观测性模块中管理
@@ -734,6 +1190,78 @@ logger.error("Failed to create user", exc_info=True, extra={"email": "test@examp
 - 事件驱动设计，支持松耦合架构
 - 任务重试机制，提高系统可靠性
 - 统一的消息队列接口，便于切换实现
+
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 消息队列模块
+        A[消息队列抽象接口] --> B[RabbitMQ实现]
+        A --> C[Redis实现]
+        A --> D[Kafka实现]
+        
+        E[连接管理] --> B
+        E --> C
+        E --> D
+        
+        F[生产者] --> B
+        F --> C
+        F --> D
+        
+        G[消费者] --> B
+        G --> C
+        G --> D
+    end
+    
+    subgraph 异步任务模块
+        H[任务基类] --> I[邮件发送任务]
+        H --> J[数据处理任务]
+        H --> K[通知任务]
+        
+        L[任务调度] --> I
+        L --> J
+        L --> K
+    end
+    
+    subgraph 事件驱动架构
+        M[领域事件] --> F
+        G --> L
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style J fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style M fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant Service as 服务层
+    participant Event as 领域事件
+    participant Producer as 消息生产者
+    participant MQ as 消息队列
+    participant Consumer as 消息消费者
+    participant Task as 异步任务
+    participant External as 外部系统
+    
+    Service->>Event: 触发领域事件
+    Event->>Producer: 发布消息
+    Producer->>MQ: 发送到消息队列
+    MQ->>Consumer: 推送消息
+    Consumer->>Task: 执行异步任务
+    Task->>External: 调用外部系统
+    External->>Task: 返回结果
+    Task->>Consumer: 完成任务
+```
 
 **消息队列选型建议**：
 | 消息队列 | 适用场景 | 特点 |
@@ -894,6 +1422,73 @@ async def consume_user_created_events():
 - 插件生命周期管理
 - 插件依赖管理
 
+**模块架构图**：
+```mermaid
+graph TD
+    subgraph 插件架构
+        A[插件基类] --> B[认证插件]
+        A --> C[日志插件]
+        A --> D[监控插件]
+        A --> E[自定义插件]
+        
+        F[插件管理器] --> G[插件发现]
+        F --> H[插件注册]
+        F --> I[插件初始化]
+        F --> J[插件注销]
+        
+        G --> K[入口点扫描]
+        G --> L[动态加载]
+        
+        H --> M[路由注册]
+        H --> N[中间件注册]
+        H --> O[事件监听]
+    end
+    
+    FastAPI[FastAPI应用] --> F
+    F --> FastAPI
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style J fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style M fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style FastAPI fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+```
+
+**数据流转图**：
+```mermaid
+sequenceDiagram
+    participant App as FastAPI应用
+    participant PM as 插件管理器
+    participant Discovery as 插件发现
+    participant Loader as 插件加载
+    participant Registry as 插件注册
+    participant Plugin as 插件实例
+    
+    App->>PM: 初始化插件管理器
+    PM->>Discovery: 发现插件
+    Discovery->>Loader: 扫描入口点
+    Loader->>Plugin: 加载插件类
+    Plugin->>Loader: 返回插件实例
+    Loader->>PM: 注册插件实例
+    PM->>Registry: 注册插件
+    Registry->>App: 向应用注册插件
+    App->>PM: 应用运行
+    App->>PM: 应用关闭
+    PM->>Plugin: 注销插件
+    Plugin->>PM: 插件清理
+```
+
 **关键实现**：
 ```python
 # app/plugins/base.py
@@ -951,198 +1546,6 @@ class PluginManager:
                 # 记录插件注册失败
                 from app.observability.logging import logger
                 logger.error(f"Failed to register plugin {plugin.name}: {e}")
-```
-
-## 五、核心流程设计
-
-### 1. 请求处理流程
-
-```mermaid
-sequenceDiagram
-    participant Client as 客户端
-    participant API as API网关
-    participant FastAPI as FastAPI应用
-    participant Middleware as 中间件链
-    participant Router as 路由层
-    participant Service as 服务层
-    participant Repository as 仓储层
-    participant DB as 数据库
-    participant Cache as Redis缓存
-    participant Event as 领域事件
-    
-    Client->>API: 发送请求
-    API->>FastAPI: 转发请求
-    FastAPI->>Middleware: 经过中间件链
-    Middleware->>Middleware: CORS检查
-    Middleware->>Middleware: 日志记录
-    Middleware->>Middleware: 限流检查
-    Middleware->>Middleware: 认证授权
-    Middleware->>Router: 路由匹配
-    Router->>Service: 调用服务方法
-    Service->>Cache: 检查缓存
-    alt 缓存命中
-        Cache-->>Service: 返回缓存数据
-    else 缓存未命中
-        Service->>Repository: 调用仓储方法
-        Repository->>DB: 执行数据库操作
-        DB-->>Repository: 返回数据
-        Repository-->>Service: 返回处理结果
-        Service->>Cache: 更新缓存
-        Service->>Event: 发布领域事件
-    end
-    Service-->>Router: 返回业务结果
-    Router->>Middleware: 响应经过中间件
-    Middleware->>FastAPI: 返回响应
-    FastAPI->>API: 返回响应
-    API-->>Client: 返回HTTP响应
-```
-
-### 2. 用户注册流程
-
-```mermaid
-sequenceDiagram
-    participant Client as 客户端
-    participant FastAPI as FastAPI应用
-    participant Router as 路由层
-    participant AuthService as 认证服务
-    participant UserService as 用户服务
-    participant UserRepo as 用户仓储
-    participant DB as 数据库
-    participant Event as 领域事件
-    
-    Client->>FastAPI: POST /api/v1/auth/register
-    FastAPI->>Router: 路由匹配
-    Router->>AuthService: 调用注册方法
-    AuthService->>UserService: 调用创建用户方法
-    UserService->>UserRepo: 检查邮箱是否已存在
-    UserRepo->>DB: SELECT * FROM users WHERE email = ?
-    DB-->>UserRepo: 返回空结果
-    UserRepo-->>UserService: 邮箱未注册
-    UserService->>UserService: 加密密码
-    UserService->>UserRepo: 创建用户
-    UserRepo->>DB: INSERT INTO users (...) VALUES (...)
-    DB-->>UserRepo: 返回创建结果
-    UserRepo-->>UserService: 返回用户对象
-    UserService->>Event: 发布用户创建事件
-    UserService-->>AuthService: 返回用户对象
-    AuthService->>AuthService: 生成JWT令牌
-    AuthService-->>Router: 返回令牌和用户信息
-    Router-->>FastAPI: 返回响应
-    FastAPI-->>Client: 201 Created {token, user}
-```
-
-### 3. 用户登录流程
-
-```mermaid
-sequenceDiagram
-    participant Client as 客户端
-    participant FastAPI as FastAPI应用
-    participant Router as 路由层
-    participant AuthService as 认证服务
-    participant UserService as 用户服务
-    participant UserRepo as 用户仓储
-    participant DB as 数据库
-    participant Cache as Redis缓存
-    
-    Client->>FastAPI: POST /api/v1/auth/login
-    FastAPI->>Router: 路由匹配
-    Router->>AuthService: 调用登录方法
-    AuthService->>UserService: 调用认证方法
-    UserService->>UserRepo: 根据邮箱获取用户
-    UserRepo->>DB: SELECT * FROM users WHERE email = ?
-    DB-->>UserRepo: 返回用户数据
-    UserRepo-->>UserService: 返回用户对象
-    UserService->>UserService: 验证密码
-    UserService-->>AuthService: 返回认证结果
-    AuthService->>AuthService: 生成JWT令牌
-    AuthService->>Cache: 缓存用户会话
-    Cache-->>AuthService: 缓存成功
-    AuthService-->>Router: 返回令牌和用户信息
-    Router-->>FastAPI: 返回响应
-    FastAPI-->>Client: 200 OK {token, user}
-```
-
-### 4. 依赖注入流程
-
-```mermaid
-graph LR
-    A[路由函数] --> B[声明依赖]
-    B --> C{依赖已解析?}
-    C -->|是| D[使用已解析依赖]
-    C -->|否| E[解析依赖]
-    E --> F{依赖有子依赖?}
-    F -->|是| G[递归解析子依赖]
-    F -->|否| H[创建依赖实例]
-    G --> H
-    H --> I[缓存依赖实例]
-    I --> D
-    D --> J[执行路由逻辑]
-    
-    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style H fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style I fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style J fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-```
-
-### 5. 数据库会话管理流程
-
-```mermaid
-graph LR
-    A[路由函数开始] --> B[调用数据库依赖]
-    B --> C[创建数据库会话]
-    C --> D[返回会话给路由]
-    D --> E[路由函数执行]
-    E --> F[调用服务层]
-    F --> G[执行数据库操作]
-    G --> H{操作成功?}
-    H -->|是| I[提交事务]
-    H -->|否| J[回滚事务]
-    I --> K[关闭数据库会话]
-    J --> K
-    K --> L[路由函数结束]
-    
-    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style H fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style I fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style J fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style K fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
-    style L fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-```
-
-### 6. 插件加载流程
-
-```mermaid
-graph LR
-    A[应用启动] --> B[初始化插件管理器]
-    B --> C[发现插件]
-    C --> D[加载插件]
-    D --> E[注册插件到应用]
-    E --> F[插件初始化]
-    F --> G[应用运行]
-    G --> H[应用关闭]
-    H --> I[插件注销]
-    
-    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
-    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style D fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style E fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style F fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
-    style G fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style H fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
-    style I fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
 ```
 
 ## 六、目录结构设计
