@@ -158,6 +158,106 @@ graph TD
     style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
 ```
 
+### 1.2 优化后的整体架构图
+
+基于上述分析，我们对整体架构进行了优化，新增了API网关详细设计、配置中心、服务注册与发现、事件总线等组件，同时调整了部分模块关系：
+
+```mermaid
+graph TD
+    subgraph 客户端层
+        A[Web客户端] --> B[API网关]
+        C[移动客户端] --> B
+        D[第三方服务] --> B
+    end
+    
+    subgraph 服务治理层
+        B --> ZK[服务注册与发现]
+        CC[配置中心] --> E[FastAPI应用]
+    end
+    
+    subgraph 应用层
+        B --> E[FastAPI应用]
+        
+        subgraph 核心框架层
+            E --> G[中间件模块]
+            G --> F[路由模块]
+            G --> H[依赖注入模块]
+            H --> I[配置管理模块]
+            I --> CC
+        end
+        
+        subgraph 业务逻辑层
+            F --> J[服务层]
+            J --> K[仓储层]
+            J --> EB[事件总线]
+            EB --> L[领域事件]
+        end
+        
+        subgraph 数据一致性层
+            K --> DC[数据一致性保障]
+            DC --> M[数据库]
+        end
+        
+        subgraph 基础设施层
+            K --> M[数据库]
+            J --> N[缓存层]
+            L --> O[消息队列]
+            E --> P[日志模块]
+            E --> Q[安全模块]
+            E --> R[观测性模块]
+            R --> R1[指标监控]
+            R --> R2[分布式追踪]
+            R --> R3[健康检查]
+            R --> R4[告警系统]
+        end
+        
+        subgraph 扩展层
+            E --> S[插件架构]
+        end
+    end
+    
+    subgraph API网关功能
+        B1[路由转发与负载均衡] --> B
+        B2[认证授权前置处理] --> B
+        B3[限流与熔断机制] --> B
+        B4[API版本管理] --> B
+        B5[请求/响应转换] --> B
+    end
+    
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style C fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style D fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style E fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style F fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style H fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style I fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style J fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style K fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style L fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style M fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style N fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style O fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style P fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style Q fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style R fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style S fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style ZK fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style CC fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style EB fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style DC fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style R1 fill:#E9ECEF,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style R2 fill:#E9ECEF,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style R3 fill:#E9ECEF,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style R4 fill:#E9ECEF,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style B1 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style B2 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style B3 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style B4 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style B5 fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+```
+
 ### 2. 分层设计
 
 | 层级 | 职责 | 核心模块 |
