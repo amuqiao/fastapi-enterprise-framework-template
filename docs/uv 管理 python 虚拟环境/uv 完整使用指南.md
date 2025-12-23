@@ -267,9 +267,9 @@ flowchart TD
 4. **团队成员更新代码后需重新执行 `uv sync`**
 5. **定期使用 `uv update --all` 更新依赖并测试**
 
-## 6. 完整工作流最佳实践
+## 7. 完整工作流最佳实践
 
-### 6.1 开发工作流
+### 7.1 开发工作流
 
 ```mermaid
 flowchart TD
@@ -295,7 +295,7 @@ flowchart TD
     class L result;
 ```
 
-### 6.2 生产部署工作流
+### 7.2 生产部署工作流
 
 ```mermaid
 flowchart TD
@@ -317,9 +317,9 @@ flowchart TD
     class B,D,F,H,I action;
 ```
 
-## 7. 常见问题与解决方案
+## 8. 常见问题与解决方案
 
-### 7.1 环境冲突问题
+### 8.1 环境冲突问题
 
 ```mermaid
 flowchart TD
@@ -330,7 +330,7 @@ flowchart TD
     D -->|^ 或 >=| E[结合 uv.lock 保证一致性]
     
     A -->|安装慢| F[解决方案：配置镜像源]
-    F -->|编辑 pyproject.toml| G["添加 [tool.uv] 配置"] 
+    F -->|编辑 pyproject.toml| G[添加 \[tool.uv\] 配置]
     G -->|index-url = 镜像地址| H[加速依赖下载]
     
     classDef problem fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
@@ -342,7 +342,7 @@ flowchart TD
     class C,E,H result;
 ```
 
-### 7.2 镜像源配置
+### 8.2 镜像源配置
 
 ```toml
 [tool.uv]
@@ -352,14 +352,14 @@ index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 extra-index-url = ["https://pypi.org/simple"]
 ```
 
-### 7.3 性能优化
+### 8.3 性能优化
 
 1. **利用缓存**：UV 自动缓存依赖，避免重复下载
 2. **并行安装**：UV 自动并行安装依赖，提高安装速度
 3. **清理缓存**：定期使用 `uv cache clean` 清理过期缓存
 4. **使用锁定文件**：生产环境使用 `uv sync` 避免依赖解析开销
 
-## 8. 总结
+## 9. 总结
 
 UV 作为新一代 Python 包管理工具，提供了快速、可靠的依赖管理和虚拟环境管理解决方案。通过遵循本指南中的最佳实践，您可以：
 
@@ -370,7 +370,7 @@ UV 作为新一代 Python 包管理工具，提供了快速、可靠的依赖管
 
 UV 正在改变 Python 生态系统的依赖管理方式，是现代 Python 项目的理想选择。
 
-## 参考资料
+## 10. 参考资料
 
 - [UV 官方文档](https://docs.astral.sh/uv/)
 - [UV 中文文档](https://hellowac.github.io/uv-zh-cn/)
