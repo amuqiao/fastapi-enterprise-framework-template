@@ -124,7 +124,6 @@ def test_ddd_components():
     print("✅ 资源清理成功")
     
     print("\n🎉 所有DDD组件测试通过！")
-    return True
 
 
 if __name__ == "__main__":

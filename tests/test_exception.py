@@ -25,7 +25,7 @@ app.add_exception_handler(StarletteHTTPException, custom_exception_handler)
 app.add_exception_handler(Exception, custom_exception_handler)
 
 # 测试模型
-class TestItem(BaseModel):
+class ItemModel(BaseModel):
     name: str
     price: float
 
@@ -63,7 +63,7 @@ def _generic_exception_route():
     1 / 0
 
 @app.post("/test-request-validation-route")
-def _request_validation_route(item: TestItem):
+def _request_validation_route(item: ItemModel):
     return {"item": item}
 
 # 创建测试客户端
