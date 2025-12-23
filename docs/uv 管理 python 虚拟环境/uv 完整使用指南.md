@@ -63,9 +63,9 @@ flowchart TD
     classDef action fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,D,G,J:::step;
-    B,C,E,F,K:::action;
-    H,I:::result;
+    class A,D,G,J step;
+    class B,C,E,F,K action;
+    class H,I result;
 ```
 
 ### 3.2 Python 版本管理
@@ -100,9 +100,9 @@ flowchart TD
     classDef action fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,C:::step;
-    B:::action;
-    D,E,F,G,H,I:::result;
+    class A,C step;
+    class B action;
+    class D,E,F,G,H,I result;
 ```
 
 ### 4.2 pyproject.toml 核心配置
@@ -168,9 +168,9 @@ flowchart TD
     classDef action fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,E,J,N:::step;
-    B,F,K,O:::action;
-    C,D,G,H,I,L,M,P,Q,R:::result;
+    class A,E,J,N step;
+    class B,F,K,O action;
+    class C,D,G,H,I,L,M,P,Q,R result;
 ```
 
 ### 5.2 依赖管理命令详解
@@ -222,9 +222,9 @@ flowchart TD
     classDef strategy fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,D,G,J:::env;
-    B,E,H,K:::strategy;
-    C,F,I,L,M:::result;
+    class A,D,G,J env;
+    class B,E,H,K strategy;
+    class C,F,I,L,M result;
 ```
 
 ### 6.3 锁定文件（uv.lock）管理
@@ -254,9 +254,9 @@ flowchart TD
     classDef action fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,D,G,J,M:::step;
-    B,E,H,K,N:::action;
-    C,F,I,L,O:::result;
+    class A,D,G,J,M step;
+    class B,E,H,K,N action;
+    class C,F,I,L,O result;
 ```
 
 #### 6.3.2 uv.lock 最佳实践
@@ -290,9 +290,9 @@ flowchart TD
     classDef action fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,C,E,H,K:::step;
-    B,D,F,G,I,J:::action;
-    L:::result;
+    class A,C,E,H,K step;
+    class B,D,F,G,I,J action;
+    class L result;
 ```
 
 ### 6.2 生产部署工作流
@@ -313,8 +313,8 @@ flowchart TD
     classDef action fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A,C,E,G,J:::step;
-    B,D,F,H,I:::action;
+    class A,C,E,G,J step;
+    class B,D,F,H,I action;
 ```
 
 ## 7. 常见问题与解决方案
@@ -330,16 +330,16 @@ flowchart TD
     D -->|^ 或 >=| E[结合 uv.lock 保证一致性]
     
     A -->|安装慢| F[解决方案：配置镜像源]
-    F -->|编辑 pyproject.toml| G[添加 [tool.uv] 配置]
+    F -->|编辑 pyproject.toml| G["添加 [tool.uv] 配置"] 
     G -->|index-url = 镜像地址| H[加速依赖下载]
     
     classDef problem fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef solution fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8;
     classDef result fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8;
     
-    A:::problem;
-    B,D,F:::solution;
-    C,E,H:::result;
+    class A problem;
+    class B,D,F,G solution;
+    class C,E,H result;
 ```
 
 ### 7.2 镜像源配置
