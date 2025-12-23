@@ -1,27 +1,15 @@
 from fastapi import Depends
-from app.dependencies.db import get_sqlite_db
-from app.repositories.sqlite.user_repository import UserRepository
-from app.repositories.base import UserRepositoryInterface
+from app.dependencies.database import get_sqlite_db
+from app.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
+from app.domains.user.repositories.user_repository import UserRepositoryInterface
 
 
-# 仓储层依赖注入函数
-def get_user_repository(db=Depends(get_sqlite_db)):
-    """获取用户仓储实例
-    
-    返回UserRepository实例，实现UserRepositoryInterface接口
-    """
-    return UserRepository(db)
+# 依赖注入函数
+def get_sqlite_user_repository(db = Depends(get_sqlite_db)):
+    """SQLite用户仓储依赖注入"""
+    return SQLiteUserRepository(db)
 
-
-# 仓储层依赖注入容器
-class RepositoryDeps:
-    """仓储层依赖注入容器，提供统一的仓储层依赖访问接口"""
-    
-    @staticmethod
-    def user_repository():
-        """用户仓储依赖"""
-        return Depends(get_user_repository)
-
-
-# 创建依赖容器实例
-repository_deps = RepositoryDeps()
+# 导出仓储依赖，供服务层使用
+export_repo_deps = {
+    "user_repository": get_sqlite_user_repository
+}

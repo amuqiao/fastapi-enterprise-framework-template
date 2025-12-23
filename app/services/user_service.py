@@ -1,10 +1,12 @@
+# 旧的UserService，已被新的DDD UserService替代
+# 为了兼容旧代码，暂时保留，但不推荐使用
 from sqlalchemy.orm import Session
-from app.models.user import User
-from app.schemas.user import UserCreate
+from app.domains.user.models.user import User
+from app.domains.user.schemas.user import UserCreate
 from app.utils.password import get_password_hash, verify_password
 from app.utils.jwt import create_access_token
 from app.config.logger import logger
-from app.repositories.base import UserRepositoryInterface
+from app.domains.user.repositories.user_repository import UserRepositoryInterface
 from app.exception import BusinessException, AuthException, NotFoundException
 from app.events.base import event_bus, UserRegisteredEvent, UserLoggedInEvent
 

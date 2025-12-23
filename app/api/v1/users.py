@@ -1,25 +1,49 @@
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
-from app.dependencies import db_deps, auth_deps, service_deps
-from app.models.user import User
-from app.schemas.user import UserResponse
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+from pydantic import BaseModel
+from app.domains.user.schemas.user import UserCreate, UserResponse, Token
+from app.domains.user.services.user_service import UserService
+from app.dependencies.service import get_user_service
+from app.config.settings import app_settings
 
 router = APIRouter()
 
 
-@router.get("/me", response_model=UserResponse)
-def get_current_user_info(current_user: User = auth_deps.current_user()):
-    """获取当前用户信息"""
-    return current_user
+class LoginRequest(BaseModel):
+    """登录请求模型"""
+    username: str
+    password: str
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register_user(
+    user_in: UserCreate,
+    user_service: UserService = Depends(get_user_service)
+):
+    """用户注册"""
+    user = user_service.create_user(user_in)
+    return UserResponse.model_validate(user)
+
+
+@router.post("/login", response_model=Token)
+def login_user(
+    login_request: LoginRequest,
+    user_service: UserService = Depends(get_user_service)
+):
+    """用户登录"""
+    user = user_service.authenticate_user(login_request.username, login_request.password)
+    access_token = user_service.generate_token(user)
+    return Token(
+        access_token=access_token,
+        token_type="bearer",
+        expires_in=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
 
 
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(
     user_id: int,
-    db: Session = db_deps.sqlite(),
-    current_user: User = auth_deps.current_user(),
-    user_service=service_deps.user_service(),
+    user_service: UserService = Depends(get_user_service)
 ):
-    """根据ID获取用户信息"""
-    # 这里可以添加权限检查，比如只有管理员可以查看其他用户信息
-    return user_service.get_user_by_id(db, user_id)
+    """根据ID获取用户"""
+    return user_service.get_user(user_id)

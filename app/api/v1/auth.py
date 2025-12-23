@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
-from app.dependencies import db_deps, service_deps, config_deps
-from app.schemas.user import UserCreate, UserResponse, Token
+from app.domains.user.schemas.user import UserCreate, UserResponse, Token
+from app.config.settings import app_settings
+from app.dependencies.service import get_user_service
 
 router = APIRouter()
 
@@ -12,11 +12,10 @@ router = APIRouter()
 )
 def register(
     user_create: UserCreate,
-    db: Session = db_deps.sqlite(),
-    user_service=service_deps.user_service(),
+    user_service = Depends(get_user_service),
 ):
     """用户注册"""
-    user = user_service.register_user(db, user_create)
+    user = user_service.create_user(user_create)
     return user
 
 
@@ -24,16 +23,14 @@ def register(
 def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = db_deps.sqlite(),
-    user_service=service_deps.user_service(),
-    app_settings=config_deps.app(),
+    user_service = Depends(get_user_service),
 ):
     """用户登录"""
     # 获取客户端IP地址
     client_ip = request.client.host if request.client else "unknown"
 
     # 验证用户
-    user = user_service.authenticate_user(db, form_data.username, form_data.password)
+    user = user_service.authenticate_user(form_data.username, form_data.password)
 
     # 生成访问令牌，传递IP地址
     access_token = user_service.generate_token(user, ip_address=client_ip)

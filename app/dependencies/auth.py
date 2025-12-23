@@ -3,8 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from app.dependencies.config import get_app_settings
-from app.dependencies.db import get_sqlite_db
-from app.services.user_service import UserService
+from app.dependencies.database import get_sqlite_db
 from app.config.logger import logger
 
 
@@ -52,9 +51,11 @@ async def get_current_user(
         logger.warning(f"JWT token decoding failed: {str(e)}")
         raise credentials_exception
 
-    # 获取用户
-    user_service = UserService()
-    user = user_service.get_user_by_id(db, int(user_id))
+    # 延迟导入，避免循环导入
+    from app.domains.user.models.user import User
+    
+    # 直接使用Session查询用户，避免依赖UserService
+    user = db.query(User).filter(User.id == int(user_id)).first()
     if user is None:
         logger.warning(f"User not found for ID: {user_id}")
         raise credentials_exception

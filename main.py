@@ -8,7 +8,7 @@ from app.dependencies.config import (
     SQLiteConfig,
     LoggingConfig,
 )
-from app.dependencies.db import database_manager, sqlite
+from app.dependencies.database import database_manager, sqlite_connection as sqlite
 from app.api.v1 import api_v1_router
 from app.middleware import setup_cors, request_logger_middleware
 from app.middleware.request import request_id_middleware

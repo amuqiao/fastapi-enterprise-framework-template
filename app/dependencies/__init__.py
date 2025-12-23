@@ -50,7 +50,7 @@ def __getattr__(name: str) -> Any:
         "DatabaseDeps",
         "db_deps",
     ]:
-        from app.dependencies.db import (
+        from app.dependencies.database import (
             DatabaseDeps,
             db_deps,
             get_sqlite_db,
@@ -81,3 +81,4 @@ def __getattr__(name: str) -> Any:
         )
         return locals()[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+

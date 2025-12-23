@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.domains.user.repositories.user_repository import UserRepositoryInterface
 from app.domains.user.models.user import User
+from app.domains.user.schemas.user import UserUpdate
 
 
 class SQLiteUserRepository(UserRepositoryInterface):
@@ -34,11 +35,11 @@ class SQLiteUserRepository(UserRepositoryInterface):
         self.db.refresh(db_user)
         return db_user
 
-    def update(self, user_id: int, user_in: any) -> Optional[User]:
+    def update(self, user_id: int, user_in: UserUpdate) -> Optional[User]:
         """更新用户"""
         db_user = self.get(user_id)
         if db_user:
-            update_data = user_in.dict(exclude_unset=True)
+            update_data = user_in.model_dump(exclude_unset=True)
             for field, value in update_data.items():
                 setattr(db_user, field, value)
             self.db.add(db_user)
