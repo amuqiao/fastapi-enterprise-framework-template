@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from fastapi.testclient import TestClient
 
 # 创建测试数据库引擎
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -50,3 +51,40 @@ def test_user(db):
     db.refresh(user)
 
     return user
+
+
+@pytest.fixture(scope="function")
+def client(db):
+    """创建FastAPI测试客户端"""
+    from main import app
+    from app.dependencies.database import get_sqlite_db
+    
+    # 重写get_sqlite_db依赖，返回测试数据库会话
+    def override_get_sqlite_db():
+        try:
+            yield db
+        finally:
+            pass  # 数据库会话由db fixture管理
+    
+    # 重写应用的依赖
+    app.dependency_overrides[get_sqlite_db] = override_get_sqlite_db
+    
+    # 创建测试客户端
+    with TestClient(app) as client:
+        yield client
+    
+    # 恢复原始依赖
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def test_user_token(client, test_user):
+    """创建测试用户令牌"""
+    from app.utils.jwt import create_access_token
+    
+    # 创建JWT令牌
+    access_token = create_access_token(
+        data={"sub": str(test_user.id), "username": test_user.username}
+    )
+    
+    return access_token

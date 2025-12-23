@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from app.domains.user.schemas.user import UserCreate, UserResponse, Token
 from app.domains.user.services.user_service import UserService
 from app.dependencies.service import get_user_service
+from app.dependencies.auth import auth_deps
 from app.config.settings import app_settings
 
 router = APIRouter()
@@ -38,6 +39,14 @@ def login_user(
         token_type="bearer",
         expires_in=app_settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
+
+
+@router.get("/me", response_model=UserResponse)
+def get_current_user(
+    current_user = auth_deps.current_user()
+):
+    """获取当前用户信息"""
+    return current_user
 
 
 @router.get("/{user_id}", response_model=UserResponse)
