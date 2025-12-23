@@ -46,7 +46,7 @@ uv help
 ### 3.1 创建与激活虚拟环境
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[1. 创建虚拟环境] -->|uv venv .venv| B[生成 .venv 目录]
     B -->|uv venv .venv --python=3.12| C[指定 Python 版本]
     C --> D[2. 激活虚拟环境]
@@ -200,7 +200,7 @@ flowchart TD
 ### 6.2 不同环境下的版本策略
 
 ```mermaid
-flowchart TD
+flowchart LR
     A[开发阶段] -->|宽松约束 ^>=| B[便于获取新特性和安全更新]
     B --> C[发现兼容性问题]
     
