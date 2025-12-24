@@ -1,0 +1,21 @@
+[1752405678427] {"template":"{from_user} started the group chat.","from_user":["龙刚"],"to_chatters":[],"divider_text":{}}
+
+[1752405696298] {"template":"{from_user} invited {to_chatters} to the group. New members can view all chat history.","from_user":["龙刚"],"to_chatters":["知识搜索助手"],"divider_text":{}}
+
+[1752405697088] {"title":null,"elements":[[{"tag":"text","text":"你好呀，我是你的口袋知识库助手，有任何问题直接问我就可以啦！"}]]}
+
+[1752405734808] {"text":"@_user_1 总结一下健康状态"}
+
+[1752405735692] {"title":null,"elements":[[{"tag":"text","text":"请升级至最新版本客户端，以查看内容"}],[{"tag":"text","text":"根据提供的健康检查报告，以下是龙刚（男，29岁）的健康状态总结：\n\n"},{"tag":"text","text":"1. "},{"tag":"text","text":"基础体征"},{"tag":"text","text":"\n\n- "},{"tag":"text","text":"血压"},{"tag":"text","text":"：109/67mmHg（正常范围）[1]\n- "},{"tag":"text","text":"身高体重"},{"tag":"text","text":"：172cm/62kg（BMI约21，正常）[1]\n- "},{"tag":"text","text":"心率"},{"tag":"text","text":"：68bpm（静息状态正常）[1]，但心电图显示窦性心动过速（110bpm）[1]\n\n"},{"tag":"text","text":"2. "},{"tag":"text","text":"器官功能"},{"tag":"text","text":"\n\n- "},{"tag":"text","text":"心肺系统"},{"tag":"text","text":"：肺、呼吸道、心脏及血管均正常[1]\n- "},{"tag":"text","text":"腹部器官"},{"tag":"text","text":"：肝、脾未见异常[1]\n- "},{"tag":"text","text":"神经系统"},{"tag":"text","text":"：发育营养状况、神经及精神状态正常[1]\n\n"},{"tag":"text","text":"3. "},{"tag":"text","text":"实验室检查"},{"tag":"text","text":"\n\n- "},{"tag":"text","text":"肝功能"},{"tag":"text","text":"：\n&nbsp;- ALT（21U/L）和AST（19U/L）均在正常范围[1]\n- "},{"tag":"text","text":"血尿酸"},{"tag":"text","text":"：363μmol/L（正常）[1]\n- "},{"tag":"text","text":"血常规"},{"tag":"text","text":"：\n&nbsp;- 红细胞分布宽度（12.3Ratio）、血小板计数（225X10^9/L）等指标均正常10\n\n"},{"tag":"text","text":"4. "},{"tag":"text","text":"五官科检查"},{"tag":"text","text":"\n\n- "},{"tag":"text","text":"视力"},{"tag":"text","text":"：右眼0.5（未矫正）、左眼0.8（未矫正）[1]\n- "},{"tag":"text","text":"其他"},{"tag":"text","text":"：辨色力正常，耳、鼻、咽喉无异常[1]\n\n"},{"tag":"text","text":"5. "},{"tag":"text","text":"需关注问题"},{"tag":"text","text":"\n\n- "},{"tag":"text","text":"视力问题"},{"tag":"text","text":"：右眼视力较低（0.5），建议进一步眼科检查[1]\n- "},{"tag":"text","text":"心动过速"},{"tag":"text","text":"：心电图显示心率110bpm（窦性心律），需排查诱因[1]\n\n"},{"tag":"text","text":"总体评价"},{"tag":"text","text":"\n\n龙刚大部分生理指标正常，健康状况良好，但需关注视力下降和心动过速问题，建议定期复查心电图并咨询眼科。\n\n> 注：数据来源为深圳市人民医院2025年4月26日体检报告3,5,6,9。\n\n[1] "},{"tag":"a","href":"https://console.volcengine.com/vikingdb/knowledge/region:vdb-knowledge+cn-beijing/collection/info/kb-770578d5da001018/chunk?pointId=122496-_sys_auto_gen_doc_id-14773301413552835162-3","text":"gf_self_info.txt"}],[{"tag":"hr"}],[{"tag":"button","text":"心动过速可能由哪些因素引起？","type":"default"},{"tag":"button","text":"视力问题的常见原因有哪些？","type":"default"},{"tag":"button","text":"如何改善心动过速的症状？","type":"default"}]]}
+
+[1765246224870] {"template":"{from_user} invited members of this group to a new external group {new_chat}.","from_user":["7526444989900013596"],"to_chatters":[],"divider_text":{}}
+
+[1765250825676] {"template":"{from_user} invited {to_chatters} to the group. New members can view all chat history.","from_user":["龙刚"],"to_chatters":["获取ALL"],"divider_text":{}}
+
+[1765250885232] {"template":"{from_user} updated the group name from \"{old_group_name}\" to \"{group_name}\".","from_user":["龙刚"],"to_chatters":[],"divider_text":{}}
+
+[1765252518008] {"text":"test content"}
+
+[1765252640673] {"text":"lark-mcp mcp -a cli_a9bc10a12c381bd9 -s 5HMPvJow8R9MaFpzvnSZccjdPp8ocP0C -t im.v1.message.create,im.v1.message.list,im.v1.chat.create,preset.calendar.default"}
+
+[1765252643308] {"text":"https://ai.feishu.cn/wiki/M7Wpwu6g1iSuNakNGrkcMQ2nnKc?from=from_copylink"}
