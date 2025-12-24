@@ -15,6 +15,7 @@ __all__ = [
     "oauth2_scheme",
     # 服务层依赖
     "get_user_service",
+    "get_graphrag_service",
     # 容器类
     "ConfigDeps",
     "DatabaseDeps",
@@ -71,6 +72,7 @@ def __getattr__(name: str) -> Any:
         return locals()[name]
     elif name in [
         "get_user_service",
+        "get_graphrag_service",
         "ServiceDeps",
         "service_deps",
     ]:
@@ -78,6 +80,7 @@ def __getattr__(name: str) -> Any:
             ServiceDeps,
             service_deps,
             get_user_service,
+            get_graphrag_service,
         )
         return locals()[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

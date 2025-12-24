@@ -1,12 +1,18 @@
 from fastapi import Depends
 from app.domains.user.services.user_service import UserService
 from app.dependencies.repository import get_sqlite_user_repository
+from app.services.graphrag_service import GraphRAGService
 
 
 # 服务层依赖注入函数
 def get_user_service(user_repository = Depends(get_sqlite_user_repository)):
     """用户服务依赖注入"""
     return UserService(user_repository)
+
+
+def get_graphrag_service():
+    """GraphRAG服务依赖注入"""
+    return GraphRAGService()
 
 
 # 服务层依赖容器
@@ -16,6 +22,10 @@ class ServiceDeps:
     @staticmethod
     def user_service():
         return Depends(get_user_service)
+    
+    @staticmethod
+    def graphrag_service():
+        return Depends(get_graphrag_service)
 
 
 # 导出服务依赖
