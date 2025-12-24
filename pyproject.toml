@@ -23,10 +23,16 @@ dev = [
     "pytest-cov>=7.0.0",
     "httpx>=0.27.0",
 ]
+mcp-rag = [
+    "graphrag-more==1.2.0",
+]
 
 [tool.uv]
 index-url = "https://mirrors.aliyun.com/pypi/simple/"  # 指定pip安装时的镜像源，加速依赖下载
 extra-index-url = ["https://pypi.org/simple"]  # 添加官方源作为备用
+
+[tool.setuptools]
+packages = ["app"]
 
 [build-system]
 requires = ["setuptools>=42", "wheel"]
