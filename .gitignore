@@ -146,6 +146,10 @@ env.bak/
 venv.bak/
 app.db
 
+# Logs
+logs/
+*.log
+
 # Spyder project settings
 .spyderproject
 .spyproject
