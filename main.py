@@ -22,7 +22,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.config.logger import logger
-from app.events.base import event_bus, EventType, UserLoggedInEvent, UserRegisteredEvent
+from app.infrastructure.events import event_bus, EventType, UserLoggedInEvent, UserRegisteredEvent
 
 # 创建FastAPI应用
 app = FastAPI(

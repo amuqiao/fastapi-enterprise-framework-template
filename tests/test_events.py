@@ -1,4 +1,4 @@
-from app.events.base import EventType, Event, UserRegisteredEvent, UserLoggedInEvent, EventBus, event_bus
+from app.infrastructure.events import EventType, Event, UserRegisteredEvent, UserLoggedInEvent, EventBus, event_bus
 
 
 class TestEventType:
