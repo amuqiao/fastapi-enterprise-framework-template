@@ -261,6 +261,28 @@ python main.py [options]
 1. 在`app/middleware/`目录下创建新的中间件
 2. 在`main.py`中注册中间件
 
+## 示例集合
+
+为了帮助开发者更好地理解和使用AgentFlow框架，我们提供了一系列示例代码，涵盖了框架的主要功能和使用场景。
+
+### 示例列表
+
+- **[快速入门](./examples/quickstart/)**：创建一个简单的API应用，了解框架的基本使用方法
+- **[认证系统](./examples/auth/)**：实现完整的用户认证系统，包括JWT认证、OAuth2密码流等
+- **[数据库操作](./examples/database/)**：使用数据库抽象层进行CRUD操作，实现仓储模式
+- **[事件系统](./examples/events/)**：学习如何使用框架的事件总线，实现事件驱动架构
+- **[配置管理](./examples/config/)**：学习如何使用框架的配置管理功能
+- **[中间件使用](./examples/middleware/)**：了解如何使用和自定义中间件
+- **[测试策略](./examples/testing/)**：了解如何为FastAPI应用编写测试
+- **[部署指南](./examples/deployment/)**：学习如何部署FastAPI应用到生产环境
+
+### 如何使用示例
+
+1. 进入示例目录：`cd examples/<示例名称>`
+2. 安装依赖：`pip install -r requirements.txt`
+3. 运行应用：`python main.py`
+4. 访问API文档：打开浏览器访问 `http://localhost:8000/docs`
+
 ## 测试
 
 ### 运行测试
