@@ -9,6 +9,7 @@ from app.dependencies.config import (
     LoggingConfig,
 )
 from app.dependencies.database import database_manager, sqlite_connection as sqlite
+from app.dependencies.rate_limit import limiter, rate_limit_exception_handler
 from app.api.v1 import api_v1_router
 from app.middleware import setup_cors, request_logger_middleware
 from app.middleware.request import request_id_middleware
@@ -16,6 +17,8 @@ from app.exception import custom_exception_handler
 from app.exception.base import BaseAppException
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.config.logger import logger
 from app.events.base import event_bus, EventType, UserLoggedInEvent, UserRegisteredEvent
 
@@ -25,6 +28,10 @@ app = FastAPI(
     version=app_settings.APP_VERSION,
     openapi_url=f"{app_settings.API_V1_STR}/openapi.json",
 )
+
+# 应用限流器
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
 
 
 # 1. 定义事件处理器 - 处理用户注册事件
