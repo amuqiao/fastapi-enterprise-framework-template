@@ -3,7 +3,9 @@ import argparse
 import os
 from app.dependencies.config import (
     app_settings,
-    config_deps,
+    get_app_settings,
+    get_sqlite_config,
+    get_logging_config,
     AppSettings,
     SQLiteConfig,
     LoggingConfig,
@@ -93,13 +95,21 @@ async def startup_event():
     # 4. 订阅事件 - 订阅用户登录事件
     event_bus.subscribe(EventType.USER_LOGGED_IN, handle_user_logged_in)
     logger.info("已订阅用户登录事件")
+    
+    # 5. 启动事件总线
+    event_bus.start()
+    logger.info("事件总线已启动")
 
 
 # 应用关闭事件
 @app.on_event("shutdown")
 async def shutdown_event():
     """应用关闭事件 - 断开数据库连接"""
-    logger.info("应用关闭，正在断开数据库连接...")
+    logger.info("应用关闭，正在停止事件总线...")
+    event_bus.stop()
+    logger.info("事件总线已停止")
+    
+    logger.info("正在断开数据库连接...")
     database_manager.disconnect_all()
     logger.info("所有数据库连接已断开")
 
@@ -137,9 +147,9 @@ def root():
 
 @app.get("/api/v1/config")
 def get_config(
-    app_config: AppSettings = config_deps.app(),
-    db_config: SQLiteConfig = config_deps.sqlite(),
-    log_config: LoggingConfig = config_deps.logging(),
+    app_config: AppSettings = Depends(get_app_settings),
+    db_config: SQLiteConfig = Depends(get_sqlite_config),
+    log_config: LoggingConfig = Depends(get_logging_config),
 ):
     """测试配置依赖注入"""
     return {

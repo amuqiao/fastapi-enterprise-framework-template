@@ -39,10 +39,11 @@ class TestEventBase:
         """测试事件转换为字典功能"""
         event = Event(EventType.USER_REGISTERED, {"user_id": 1, "username": "test"})
         event_dict = event.to_dict()
-        assert event_dict == {
-            "event_type": "user_registered",
-            "data": {"user_id": 1, "username": "test"}
-        }
+        # 验证事件字典包含预期的字段
+        assert "event_id" in event_dict
+        assert "timestamp" in event_dict
+        assert event_dict["event_type"] == "user_registered"
+        assert event_dict["data"] == {"user_id": 1, "username": "test"}
 
 
 class TestUserRegisteredEvent:
@@ -60,13 +61,14 @@ class TestUserRegisteredEvent:
         """测试用户注册事件转换为字典"""
         event = UserRegisteredEvent(user_id=1, username="testuser", email="test@example.com")
         event_dict = event.to_dict()
-        assert event_dict == {
-            "event_type": "user_registered",
-            "data": {
-                "user_id": 1,
-                "username": "testuser",
-                "email": "test@example.com"
-            }
+        # 验证事件字典包含预期的字段
+        assert "event_id" in event_dict
+        assert "timestamp" in event_dict
+        assert event_dict["event_type"] == "user_registered"
+        assert event_dict["data"] == {
+            "user_id": 1,
+            "username": "testuser",
+            "email": "test@example.com"
         }
 
 
@@ -85,13 +87,14 @@ class TestUserLoggedInEvent:
         """测试用户登录事件转换为字典"""
         event = UserLoggedInEvent(user_id=1, username="testuser", ip_address="127.0.0.1")
         event_dict = event.to_dict()
-        assert event_dict == {
-            "event_type": "user_logged_in",
-            "data": {
-                "user_id": 1,
-                "username": "testuser",
-                "ip_address": "127.0.0.1"
-            }
+        # 验证事件字典包含预期的字段
+        assert "event_id" in event_dict
+        assert "timestamp" in event_dict
+        assert event_dict["event_type"] == "user_logged_in"
+        assert event_dict["data"] == {
+            "user_id": 1,
+            "username": "testuser",
+            "ip_address": "127.0.0.1"
         }
 
 
@@ -110,13 +113,15 @@ class TestEventBus:
         """测试订阅事件"""
         bus = EventBus()
         handler = lambda event: None
-        
+    
         # 订阅事件
         bus.subscribe(EventType.USER_REGISTERED, handler)
-        
+    
         # 验证订阅成功
         assert EventType.USER_REGISTERED in bus.subscribers
-        assert handler in bus.subscribers[EventType.USER_REGISTERED]
+        # 现在subscribers存储的是元组(handler, is_async)
+        handlers = [h for h, is_async in bus.subscribers[EventType.USER_REGISTERED]]
+        assert handler in handlers
         assert len(bus.subscribers[EventType.USER_REGISTERED]) == 1
     
     def test_subscribe_multiple_handlers(self):
@@ -131,8 +136,9 @@ class TestEventBus:
         
         # 验证多个处理器订阅成功
         assert len(bus.subscribers[EventType.USER_REGISTERED]) == 2
-        assert handler1 in bus.subscribers[EventType.USER_REGISTERED]
-        assert handler2 in bus.subscribers[EventType.USER_REGISTERED]
+        handlers = [h for h, is_async in bus.subscribers[EventType.USER_REGISTERED]]
+        assert handler1 in handlers
+        assert handler2 in handlers
     
     def test_unsubscribe(self):
         """测试取消订阅事件"""
@@ -145,7 +151,8 @@ class TestEventBus:
         
         # 验证取消订阅成功
         assert EventType.USER_REGISTERED in bus.subscribers
-        assert handler not in bus.subscribers[EventType.USER_REGISTERED]
+        handlers = [h for h, is_async in bus.subscribers[EventType.USER_REGISTERED]]
+        assert handler not in handlers
         assert len(bus.subscribers[EventType.USER_REGISTERED]) == 0
     
     def test_publish_event(self):
