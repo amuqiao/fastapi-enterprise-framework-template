@@ -1,7 +1,7 @@
 [project]
 name = "fastapi-enterprise-template"
 version = "0.1.0"
-description = "基于FastAPI的企业级架构模板，支持多环境部署、API版本控制和模块化设计"
+description = "FastAPI enterprise architecture template with multi-environment deployment, API version control and modular design"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -16,6 +16,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     "email-validator>=2.3.0",
     "slowapi>=0.1.9",
+    "locust>=2.42.6",
 ]
 [tool.setuptools]
 packages = ["app"]
@@ -28,8 +29,8 @@ dev = [
 ]
 
 [tool.uv]
-index-url = "https://mirrors.aliyun.com/pypi/simple/"  # 指定pip安装时的镜像源，加速依赖下载
-extra-index-url = ["https://pypi.org/simple"]  # 添加官方源作为备用
+index-url = "https://mirrors.aliyun.com/pypi/simple/"
+extra-index-url = ["https://pypi.org/simple"]
 
 [build-system]
 requires = ["setuptools>=42", "wheel"]
