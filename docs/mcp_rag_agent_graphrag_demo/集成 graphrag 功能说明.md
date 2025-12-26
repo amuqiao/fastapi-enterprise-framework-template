@@ -20,8 +20,9 @@
 │   │           ├── graphrag_service.py      # 新增GraphRAG服务封装
 │   │           └── tool_service.py          # 新增工具服务
 │   └── ...                          # 原有项目结构
-├── design_docs/
-│   └── mcp_rag_agent_graphrag_demo/ # 原有GraphRAG演示代码
+├── docs/
+│   └── mcp_rag_agent_graphrag_demo/ # GraphRAG演示代码和数据
+│   └── 集成 graphrag 功能说明.md       # 本集成说明文档
 ├── .env                             # 环境变量配置文件
 └── main.py                          # FastAPI主入口
 ```
@@ -98,8 +99,8 @@ GraphRAG的配置管理位于`app/config/graphrag_config.py`，主要配置项�
 
 | 配置项 | 描述 | 默认值 |
 |-------|------|-------|
-| DATA_DIR | 数据目录 | design_docs/mcp_rag_agent_graphrag_demo/doupocangqiong/output |
-| LANCEDB_URI | LanceDB向量数据库URI | design_docs/mcp_rag_agent_graphrag_demo/doupocangqiong/output/lancedb |
+| DATA_DIR | 数据目录 | docs/mcp_rag_agent_graphrag_demo/doupocangqiong/output |
+| LANCEDB_URI | LanceDB向量数据库URI | docs/mcp_rag_agent_graphrag_demo/doupocangqiong/output/lancedb |
 | COMMUNITY_LEVEL | 社区级别 | 2 |
 | API_KEY | API密钥 | None |
 | BASE_URL | API基础地址 | None |
@@ -216,7 +217,108 @@ pytest tests/
 - **工具服务**：管理支持的工具列表，提供工具查询功能
 - **配置管理**：使用Pydantic管理GraphRAG的配置设置
 
-### 7.2 数据流
+### 7.2 系统架构图
+
+```mermaid
+graph TD
+    subgraph "用户层"
+        Client["客户端"]
+    end
+
+    subgraph "API层"
+        API["FastAPI应用"]
+        Router["API路由"]
+    end
+
+    subgraph "服务层"
+        GraphRAGService["GraphRAG服务"]
+        ToolService["工具服务"]
+    end
+
+    subgraph "配置层"
+        Config["配置管理"]
+        Env["环境变量"]
+    end
+
+    subgraph "数据层"
+        LanceDB["LanceDB向量数据库"]
+        DataFiles["GraphRAG数据文件"]
+    end
+
+    subgraph "外部依赖"
+        LLM["大语言模型"]
+    end
+
+    Client -->|HTTP请求| API
+    API -->|路由分发| Router
+    Router -->|聊天请求| GraphRAGService
+    Router -->|工具查询| ToolService
+    
+    GraphRAGService -->|读取配置| Config
+    ToolService -->|读取配置| Config
+    Config -->|加载| Env
+    
+    GraphRAGService -->|查询| LanceDB
+    GraphRAGService -->|读取数据| DataFiles
+    GraphRAGService -->|调用| LLM
+    
+    style Client fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style API fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style Router fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style GraphRAGService fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style ToolService fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style Config fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style Env fill:#FECA57,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style LanceDB fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style DataFiles fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style LLM fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+```
+
+### 7.3 API请求处理流程图
+
+```mermaid
+graph TD
+    subgraph "客户端请求"
+        A["客户端"] -->|POST /api/v1/graphrag/chat| B["API路由层"]
+        A -->|GET /api/v1/graphrag/tools| B
+    end
+
+    subgraph "路由处理"
+        B -->|聊天请求| C["graphrag.py"]
+        B -->|工具查询| D["graphrag.py"]
+    end
+
+    subgraph "服务调用"
+        C -->|调用| E["GraphRAGService.local_search()"]
+        D -->|调用| F["ToolService.get_tools()"]
+        
+        E -->|构建搜索引擎| G["build_local_search_engine()"]
+        G -->|查询向量库| H["LanceDB查询"]
+        H -->|返回结果| G
+        G -->|生成回答| I["调用大语言模型"]
+        I -->|返回结果| E
+    end
+
+    subgraph "响应返回"
+        E -->|返回聊天结果| C
+        F -->|返回工具列表| D
+        C -->|200 OK| J["客户端"]
+        D -->|200 OK| J
+    end
+
+    style A fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+    style B fill:#4ECDC4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style C fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style D fill:#45B7D1,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style E fill:#96CEB4,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style F fill:#FF9FF3,stroke:#2D3436,stroke-width:2px,color:#2D3436,rx:8,ry:8
+    style G fill:#54A0FF,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style H fill:#E9ECEF,stroke:#2D3436,stroke-width:3px,color:#2D3436,rx:8,ry:8
+    style I fill:#FF6B6B,stroke:#2D3436,stroke-width:2px,color:white,rx:8,ry:8
+    style J fill:#FF6B6B,stroke:#2D3436,stroke-width:3px,color:white,rx:8,ry:8
+```
+
+### 7.4 数据流详细说明
 
 1. **Chat请求**：
    - 客户端发送POST请求到`/api/v1/graphrag/chat`
