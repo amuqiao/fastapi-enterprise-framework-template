@@ -30,6 +30,11 @@ class AppSettings(BaseSettings):
     SECRET_KEY: str = "your-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # 飞书机器人配置
+    FEISHU_APP_ID: str = ""
+    FEISHU_APP_SECRET: str = ""
+    FEISHU_LOG_LEVEL: str = "DEBUG"
 
     # 配置文件优先级
     model_config = BaseSettings.model_config.copy()

@@ -10,6 +10,7 @@ class EventType(Enum):
     USER_LOGGED_IN = "user_logged_in"
     USER_UPDATED = "user_updated"
     USER_DELETED = "user_deleted"
+    FEISHU_MESSAGE_RECEIVED = "feishu_message_received"
 
 
 class Event(ABC):

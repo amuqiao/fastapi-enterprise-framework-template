@@ -23,6 +23,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.config.logger import logger
 from app.infrastructure.events import event_bus, EventType, UserLoggedInEvent, UserRegisteredEvent
+from app.domains.feishu_bot.services.feishu_bot_service import FeishuBotService, FeishuMessageReceivedEvent
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -34,6 +35,13 @@ app = FastAPI(
 # 应用限流器
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
+
+# 初始化飞书机器人服务
+feishu_bot_service = FeishuBotService(
+    app_id=app_settings.FEISHU_APP_ID,
+    app_secret=app_settings.FEISHU_APP_SECRET,
+    log_level=app_settings.FEISHU_LOG_LEVEL
+)
 
 
 # 1. 定义事件处理器 - 处理用户注册事件
@@ -73,6 +81,21 @@ def handle_user_logged_in(event: UserLoggedInEvent):
     )
 
 
+# 3. 定义事件处理器 - 处理飞书消息事件
+def handle_feishu_message(event: FeishuMessageReceivedEvent):
+    """处理飞书消息事件的函数"""
+    # 从event.data字典中获取事件数据
+    message_id = event.data["message_id"]
+    chat_id = event.data["chat_id"]
+    content = event.data["content"]
+    sender = event.data["sender"]
+
+    # 处理事件
+    logger.info(
+        f"【飞书消息事件】: 收到消息 ID: {message_id}, 来自: {sender}, 内容: {content}"
+    )
+
+
 # 应用启动事件
 @app.on_event("startup")
 async def startup_event():
@@ -96,16 +119,37 @@ async def startup_event():
     event_bus.subscribe(EventType.USER_LOGGED_IN, handle_user_logged_in)
     logger.info("已订阅用户登录事件")
     
-    # 5. 启动事件总线
+    # 5. 订阅事件 - 订阅飞书消息事件
+    event_bus.subscribe(EventType.FEISHU_MESSAGE_RECEIVED, handle_feishu_message)
+    logger.info("已订阅飞书消息事件")
+    
+    # 6. 启动事件总线
     event_bus.start()
     logger.info("事件总线已启动")
+    
+    # 7. 初始化并启动飞书机器人服务
+    if app_settings.FEISHU_APP_ID and app_settings.FEISHU_APP_SECRET:
+        logger.info("正在初始化飞书机器人服务...")
+        feishu_bot_service.init()
+        logger.info("正在启动飞书机器人服务...")
+        feishu_bot_service.start()
+        logger.info("飞书机器人服务已启动")
+    else:
+        logger.warning("飞书机器人配置不完整，跳过启动")
 
 
 # 应用关闭事件
 @app.on_event("shutdown")
 async def shutdown_event():
     """应用关闭事件 - 断开数据库连接"""
-    logger.info("应用关闭，正在停止事件总线...")
+    logger.info("应用关闭，正在停止飞书机器人服务...")
+    try:
+        feishu_bot_service.stop()
+        logger.info("飞书机器人服务已停止")
+    except Exception as e:
+        logger.error(f"停止飞书机器人服务时出错: {e}")
+    
+    logger.info("正在停止事件总线...")
     event_bus.stop()
     logger.info("事件总线已停止")
     
