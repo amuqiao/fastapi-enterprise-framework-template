@@ -5,6 +5,7 @@ import json
 import threading
 from app.infrastructure.events import event_bus
 from app.infrastructure.events.event import EventType, Event
+from app.domains.rag.services import rag_service
 
 
 class FeishuMessageReceivedEvent(Event):
@@ -117,8 +118,32 @@ class FeishuBotService:
         )
         event_bus.publish(event)
         
-        # 回复消息
-        self.reply_message(data.event.message.message_id, res_content)
+        # 使用RAG处理消息并回复
+        self.reply_with_rag(data.event.message.message_id, res_content)
+    
+    def reply_with_rag(self, message_id: str, content: str) -> None:
+        """使用RAG处理消息并回复
+        
+        Args:
+            message_id: 要回复的消息ID
+            content: 消息内容
+        """
+        try:
+            # 使用RAG服务处理消息
+            rag_result = rag_service.query(content)
+            
+            # 构建回复内容
+            if "error" in rag_result:
+                reply_content = f"查询出错：{rag_result.get('answer', '无法处理请求')}"
+            else:
+                reply_content = rag_result.get('answer', '无法生成回答')
+            
+            # 发送回复
+            self.reply_message(message_id, reply_content)
+        except Exception as e:
+            # 如果RAG处理失败，发送错误信息
+            error_message = f"处理请求时出错：{str(e)}"
+            self.reply_message(message_id, error_message)
     
     def reply_message(self, message_id: str, content: str, msg_type: str = "text") -> None:
         """回复飞书消息
@@ -130,7 +155,7 @@ class FeishuBotService:
         """
         # 构建回复内容
         reply_content = json.dumps({
-            "text": f"收到你发送的消息：{content}\nReceived message: {content}"
+            "text": content
         })
         
         # 构建回复请求

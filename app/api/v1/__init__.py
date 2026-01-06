@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, users, health, graphrag
+from app.api.v1 import auth, users, health, graphrag, rag
 
 # 创建API v1路由
 api_v1_router = APIRouter()
@@ -15,3 +15,6 @@ api_v1_router.include_router(health.router, prefix="/health", tags=["健康检�
 
 # 包含GraphRAG路由
 api_v1_router.include_router(graphrag.api_router, prefix="/graphrag", tags=["GraphRAG"])
+
+# 包含RAG路由
+api_v1_router.include_router(rag.router, prefix="/rag", tags=["RAG"])

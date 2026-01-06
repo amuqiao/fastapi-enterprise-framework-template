@@ -18,6 +18,8 @@ dependencies = [
     "slowapi>=0.1.9",
     "locust>=2.42.6",
     "lark-oapi==1.4.8",
+    "llvmlite==0.45.0",
+    "graphrag-more==1.2.0",
 ]
 [tool.setuptools]
 packages = ["app"]

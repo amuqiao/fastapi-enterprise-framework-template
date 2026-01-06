@@ -50,6 +50,15 @@ def create_index_dir(output_base, file_name):
     
     # 创建文件对应的索引目录
     index_dir = os.path.join(output_base, os.path.splitext(file_name)[0])
+    
+    # 检查索引是否已经构建
+    if os.path.exists(index_dir):
+        # 检查是否存在 output 目录（GraphRAG 构建完成的标志）
+        output_dir = os.path.join(index_dir, 'output')
+        if os.path.exists(output_dir):
+            logger.info(f'索引已经构建: {index_dir}，跳过')
+            return None
+    
     os.makedirs(index_dir, exist_ok=True)
     
     # 创建input子目录
@@ -202,6 +211,11 @@ def main():
         
         # 创建索引目录
         index_dir = create_index_dir(args.output_base, file_name)
+        
+        # 如果索引已经构建，跳过处理
+        if index_dir is None:
+            logger.info(f'跳过文件: {file_name} (索引已存在)')
+            continue
         
         # 复制配置文件
         if not copy_config_files(args.config_dir, index_dir):
