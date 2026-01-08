@@ -6,10 +6,10 @@ class GraphRAGConfig(BaseSettings):
     """GraphRAG配置"""
 
     # 数据目录
-    DATA_DIR: str = "design_docs/mcp_rag_agent_graphrag_demo/doupocangqiong/output"
+    DATA_DIR: str = "index_dir/output"
     # LanceDB URI
     LANCEDB_URI: str = (
-        "design_docs/mcp_rag_agent_graphrag_demo/doupocangqiong/output/lancedb"
+        "index_dir/output"
     )
     # 社区级别
     COMMUNITY_LEVEL: int = 2

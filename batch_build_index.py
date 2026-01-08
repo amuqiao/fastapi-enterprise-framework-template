@@ -37,7 +37,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='批量构建GraphRAG索引脚本')
     parser.add_argument('--input-dir', '-i', required=True, help='输入文件目录')
     parser.add_argument('--config-dir', '-c', required=True, help='配置文件模板目录，包含.env和settings.yaml')
-    parser.add_argument('--output-base', '-o', default='./output', help='输出基础目录')
+    parser.add_argument('--output-base', '-o', default='./index_dir/output', help='输出基础目录')
     parser.add_argument('--file-pattern', '-p', default='*.txt', help='文件匹配模式')
     parser.add_argument('--model', '-m', default=None, help='指定LLM模型，如不指定则使用配置文件中的模型')
     parser.add_argument('--embedding-model', default=None, help='指定Embedding模型，如不指定则使用配置文件中的模型')

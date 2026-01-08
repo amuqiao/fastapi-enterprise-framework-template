@@ -9,7 +9,7 @@ from typing import Optional
 class RAGConfig(BaseSettings):
     """RAG配置类"""
     # 索引相关配置
-    INDEX_BASE_DIR: str = "./output"
+    INDEX_BASE_DIR: str = "./index_dir/output"
     DEFAULT_INDEX_NAME: str = "default"
     
     # 检索器配置
@@ -18,7 +18,7 @@ class RAGConfig(BaseSettings):
     
     # 向量存储配置
     VECTOR_STORE_TYPE: str = "lancedb"
-    LANCEDB_DIR: str = "./output/lancedb"
+    LANCEDB_DIR: str = "./index_dir/output/lancedb"
     
     # 嵌入模型配置
     EMBEDDING_MODEL: str = "text-embedding-v2"

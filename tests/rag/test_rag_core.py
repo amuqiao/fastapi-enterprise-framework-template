@@ -20,7 +20,7 @@ from app.domains.rag.services import rag_service
 def test_rag_config():
     """测试RAG配置"""
     assert isinstance(rag_config, RAGConfig)
-    assert rag_config.INDEX_BASE_DIR == "./output"
+    assert rag_config.INDEX_BASE_DIR == "./index_dir/output"
     assert rag_config.RETRIEVER_TOP_K == 5
     assert rag_config.VECTOR_STORE_TYPE == "lancedb"
 

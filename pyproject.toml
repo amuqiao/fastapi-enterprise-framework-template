@@ -20,9 +20,10 @@ dependencies = [
     "lark-oapi==1.4.8",
     "llvmlite==0.45.0",
     "graphrag-more==1.2.0",
+    "mcp>=1.25.0",
 ]
 [tool.setuptools]
-packages = ["app"]
+packages = ["app", "scripts"]
 
 [project.optional-dependencies]
 dev = [
@@ -38,3 +39,7 @@ extra-index-url = ["https://pypi.org/simple"]
 [build-system]
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project.scripts]
+example-script = "scripts.example_script:main"
+run-script = "scripts.runner:main"
