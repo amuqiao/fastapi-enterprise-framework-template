@@ -1,4 +1,4 @@
-from app.utils.password import get_password_hash, verify_password
+from src.utils.password import get_password_hash, verify_password
 
 
 def test_get_password_hash():

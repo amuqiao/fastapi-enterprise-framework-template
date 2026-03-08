@@ -19,7 +19,7 @@ dependencies = [
     "locust>=2.42.6",
 ]
 [tool.setuptools]
-packages = ["app"]
+packages = ["src"]
 
 [project.optional-dependencies]
 dev = [

@@ -18,8 +18,8 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 def db():
     """创建测试数据库会话"""
     # 只导入DDD相关组件
-    from app.domains.base.models.base import Base
-    from app.domains.user.models.user import User
+    from src.domains.base.models.base import Base
+    from src.domains.user.models.user import User
 
     # 创建所有表
     Base.metadata.create_all(bind=engine)
@@ -36,8 +36,8 @@ def db():
 @pytest.fixture(scope="function")
 def test_user(db):
     """创建测试用户"""
-    from app.domains.user.models.user import User
-    from app.utils.password import get_password_hash
+    from src.domains.user.models.user import User
+    from src.utils.password import get_password_hash
 
     # 创建测试用户
     user = User(
@@ -57,7 +57,7 @@ def test_user(db):
 def client(db):
     """创建FastAPI测试客户端"""
     from main import app
-    from app.dependencies.database import get_sqlite_db
+    from src.dependencies.database import get_sqlite_db
     
     # 重写get_sqlite_db依赖，返回测试数据库会话
     def override_get_sqlite_db():
@@ -80,7 +80,7 @@ def client(db):
 @pytest.fixture(scope="function")
 def test_user_token(client, test_user):
     """创建测试用户令牌"""
-    from app.utils.jwt import create_access_token
+    from src.utils.jwt import create_access_token
     
     # 创建JWT令牌
     access_token = create_access_token(

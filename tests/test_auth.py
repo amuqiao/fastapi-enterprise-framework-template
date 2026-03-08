@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from main import app
-from app.domains.base.models.base import Base
-from app.infrastructure.database.sqlite.connection import sqlite_connection
+from src.domains.base.models.base import Base
+from src.infrastructure.database.sqlite.connection import sqlite_connection
 
 client = TestClient(app)
 

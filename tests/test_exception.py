@@ -1,13 +1,13 @@
 import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
-from app.exception import custom_exception_handler
-from app.exception.base import BaseAppException
-from app.exception.business import BusinessException, NotFoundException
-from app.exception.auth import AuthException, ForbiddenException
-from app.exception.http import ValidationException
-from app.exception.database import DatabaseException
-from app.middleware.request import request_id_middleware
+from src.exception import custom_exception_handler
+from src.exception.base import BaseAppException
+from src.exception.business import BusinessException, NotFoundException
+from src.exception.auth import AuthException, ForbiddenException
+from src.exception.http import ValidationException
+from src.exception.database import DatabaseException
+from src.middleware.request import request_id_middleware
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
@@ -142,7 +142,7 @@ def test_generic_exception_handler():
     assert str(exc) == "division by zero"
     
     # 测试自定义异常类
-    from app.exception.base import BaseAppException
+    from src.exception.base import BaseAppException
     
     custom_exc = BaseAppException(
         message="测试自定义异常",
@@ -179,7 +179,7 @@ def test_request_id_middleware():
 
 def test_success_response_format():
     """测试成功响应格式"""
-    from app.exception.response import ResponseBuilder
+    from src.exception.response import ResponseBuilder
     
     # 测试成功响应构建
     response = ResponseBuilder.success(
@@ -200,7 +200,7 @@ def test_success_response_format():
 
 def test_error_response_format():
     """测试错误响应格式"""
-    from app.exception.response import ResponseBuilder
+    from src.exception.response import ResponseBuilder
     
     # 测试错误响应构建
     response = ResponseBuilder.error(

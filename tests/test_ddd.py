@@ -3,13 +3,13 @@
 
 import sys
 from sqlalchemy.orm import Session
-from app.infrastructure.database.sqlite.connection import SQLiteConnection
-from app.domains.base.models.base import Base
-from app.domains.user.models.user import User
-from app.domains.user.schemas.user import UserCreate
-from app.domains.user.repositories.user_repository import UserRepositoryInterface
-from app.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
-from app.domains.user.services.user_service import UserService
+from src.infrastructure.database.sqlite.connection import SQLiteConnection
+from src.domains.base.models.base import Base
+from src.domains.user.models.user import User
+from src.domains.user.schemas.user import UserCreate
+from src.domains.user.repositories.user_repository import UserRepositoryInterface
+from src.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
+from src.domains.user.services.user_service import UserService
 
 
 # 初始化SQLite连接

@@ -1,5 +1,5 @@
 import pytest
-from app.dependencies.database import database_manager, sqlite_connection
+from src.dependencies.database import database_manager, sqlite_connection
 
 
 def test_database_manager_registration():

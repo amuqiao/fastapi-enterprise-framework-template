@@ -1,7 +1,7 @@
-from app.domains.user.services.user_service import UserService
-from app.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
-from app.domains.user.schemas.user import UserCreate
-from app.exception import BusinessException, AuthException
+from src.domains.user.services.user_service import UserService
+from src.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
+from src.domains.user.schemas.user import UserCreate
+from src.exception import BusinessException, AuthException
 
 
 def test_register_user(db):

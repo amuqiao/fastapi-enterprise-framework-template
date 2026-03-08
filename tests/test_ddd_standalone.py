@@ -11,12 +11,12 @@ from sqlalchemy.orm import sessionmaker
 sys.path.insert(0, '/Users/wangqiao/Downloads/github_project/fastapi-enterprise-framework-template')
 
 # 只导入DDD相关组件，不导入FastAPI应用
-from app.domains.base.models.base import Base
-from app.domains.user.models.user import User
-from app.domains.user.schemas.user import UserCreate, UserUpdate
-from app.domains.user.repositories.user_repository import UserRepositoryInterface
-from app.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
-from app.domains.user.services.user_service import UserService
+from src.domains.base.models.base import Base
+from src.domains.user.models.user import User
+from src.domains.user.schemas.user import UserCreate, UserUpdate
+from src.domains.user.repositories.user_repository import UserRepositoryInterface
+from src.infrastructure.repositories.sqlite.user_repository import SQLiteUserRepository
+from src.domains.user.services.user_service import UserService
 
 
 def test_ddd_components():

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, Request
 import argparse
 import os
-from app.dependencies.config import (
+from src.dependencies.config import (
     app_settings,
     get_app_settings,
     get_sqlite_config,
@@ -10,19 +10,19 @@ from app.dependencies.config import (
     SQLiteConfig,
     LoggingConfig,
 )
-from app.dependencies.database import database_manager, sqlite_connection as sqlite
-from app.dependencies.rate_limit import limiter, rate_limit_exception_handler
-from app.api.v1 import api_v1_router
-from app.middleware import setup_cors, request_logger_middleware
-from app.middleware.request import request_id_middleware
-from app.exception import custom_exception_handler
-from app.exception.base import BaseAppException
+from src.dependencies.database import database_manager, sqlite_connection as sqlite
+from src.dependencies.rate_limit import limiter, rate_limit_exception_handler
+from src.api.v1 import api_v1_router
+from src.middleware import setup_cors, request_logger_middleware
+from src.middleware.request import request_id_middleware
+from src.exception import custom_exception_handler
+from src.exception.base import BaseAppException
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from app.config.logger import logger
-from app.infrastructure.events import event_bus, EventType, UserLoggedInEvent, UserRegisteredEvent
+from src.config.logger import logger
+from src.infrastructure.events import event_bus, EventType, UserLoggedInEvent, UserRegisteredEvent
 
 # 创建FastAPI应用
 app = FastAPI(
